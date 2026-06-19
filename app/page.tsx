@@ -2,7 +2,7 @@ import Link from "next/link"
 import {
   Zap, Wrench, Sparkles, Hammer, Paintbrush, Car, BookOpen, Building2,
   Search, CalendarCheck, CreditCard, Star, MapPin, ArrowRight,
-  Shield, Clock, BadgeCheck, User,
+  Shield, Clock, BadgeCheck, User, CheckCircle,
 } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 
@@ -83,15 +83,16 @@ export default async function LandingPage() {
             Trusted in Ghana &amp; Nigeria
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-5">
-            Find trusted artisans.
-            <br />
-            <span className="text-indigo-400">Book in seconds.</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5">
+            The easiest way to find<br />
+            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+              skilled help near you.
+            </span>
           </h1>
 
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-            Connect with verified local professionals for electrical, plumbing, cleaning, and more.
-            No middlemen. No hassle. Just results.
+          <p className="text-slate-400 text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+            Verified electricians, plumbers, cleaners, and more — available in your city.
+            Book in minutes, pay securely, get it done.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -253,18 +254,101 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Footer ──────────────────────────────────────────── */}
-      <footer className="border-t py-8 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-          <div className="flex items-center gap-2 font-semibold text-slate-700">
-            <span className="w-5 h-5 bg-indigo-600 rounded flex items-center justify-center">
-              <Zap size={10} className="text-white" />
-            </span>
-            SmartBooking
+      <footer className="border-t bg-slate-950 text-slate-400 px-4 pt-16 pb-8">
+        <div className="max-w-7xl mx-auto">
+
+          {/* Top grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-10 mb-14">
+
+            {/* Brand column */}
+            <div className="col-span-2 sm:col-span-1">
+              <Link href="/" className="flex items-center gap-2 font-bold text-white mb-4">
+                <span className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                  <Zap size={13} className="text-white" />
+                </span>
+                SmartBooking
+              </Link>
+              <p className="text-sm leading-relaxed text-slate-500 mb-5">
+                Connecting customers with trusted local artisans across Ghana and Nigeria.
+              </p>
+              <div className="flex gap-3">
+                {/* X / Twitter */}
+                <a href="#" aria-label="Twitter" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-indigo-600 flex items-center justify-center transition">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+                {/* Instagram */}
+                <a href="#" aria-label="Instagram" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-indigo-600 flex items-center justify-center transition">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                  </svg>
+                </a>
+                {/* Facebook */}
+                <a href="#" aria-label="Facebook" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-indigo-600 flex items-center justify-center transition">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Services */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4">Services</h4>
+              <ul className="space-y-2.5 text-sm">
+                {["Electrician", "Plumber", "Cleaner", "Carpenter", "Painter", "Mechanic"].map((s) => (
+                  <li key={s}>
+                    <Link href="/sign-up" className="hover:text-white transition">{s}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li><Link href="/" className="hover:text-white transition">About Us</Link></li>
+                <li><Link href="/artisan-apply" className="hover:text-white transition">Join as Artisan</Link></li>
+                <li><a href="mailto:support@smartbooking.com" className="hover:text-white transition">Contact Support</a></li>
+                <li><Link href="/" className="hover:text-white transition">Blog</Link></li>
+                <li><Link href="/" className="hover:text-white transition">Careers</Link></li>
+              </ul>
+            </div>
+
+            {/* Get the app / CTA */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4">Get Started</h4>
+              <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                Ready to book your first artisan? Create a free account in seconds.
+              </p>
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition"
+              >
+                Create Account <ArrowRight size={13} />
+              </Link>
+              <div className="mt-5 space-y-1.5 text-xs text-slate-600">
+                <div className="flex items-center gap-1.5"><CheckCircle size={11} className="text-emerald-500" /> Free to sign up</div>
+                <div className="flex items-center gap-1.5"><CheckCircle size={11} className="text-emerald-500" /> Verified artisans only</div>
+                <div className="flex items-center gap-1.5"><CheckCircle size={11} className="text-emerald-500" /> Secure Paystack payments</div>
+              </div>
+            </div>
           </div>
-          <p>© {new Date().getFullYear()} SmartBooking · Ghana &amp; Nigeria</p>
-          <div className="flex gap-4">
-            <Link href="/sign-in" className="hover:text-slate-900 transition">Sign in</Link>
-            <Link href="/artisan-apply" className="hover:text-slate-900 transition">For Artisans</Link>
+
+          {/* Bottom bar */}
+          <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <p>© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
+            <div className="flex items-center gap-1 text-slate-600">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Available in Ghana &amp; Nigeria
+            </div>
+            <div className="flex gap-5">
+              <Link href="/" className="hover:text-slate-400 transition">Privacy Policy</Link>
+              <Link href="/" className="hover:text-slate-400 transition">Terms of Service</Link>
+              <Link href="/" className="hover:text-slate-400 transition">Cookie Policy</Link>
+            </div>
           </div>
         </div>
       </footer>

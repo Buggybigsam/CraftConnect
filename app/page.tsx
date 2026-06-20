@@ -80,7 +80,7 @@ export default async function LandingPage() {
         <div className="relative max-w-5xl mx-auto px-4 py-24 sm:py-32 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-white/10">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Trusted in Ghana &amp; Nigeria
+            Trusted in Ghana
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5">
@@ -269,7 +269,7 @@ export default async function LandingPage() {
                 SmartBooking
               </Link>
               <p className="text-sm leading-relaxed text-slate-500 mb-5">
-                Connecting customers with trusted local artisans across Ghana and Nigeria.
+                Connecting customers with trusted local artisans across Ghana.
               </p>
               <div className="flex gap-3">
                 {/* X / Twitter */}
@@ -342,7 +342,7 @@ export default async function LandingPage() {
             <p>© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
             <div className="flex items-center gap-1 text-slate-600">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              Available in Ghana &amp; Nigeria
+              Available across Ghana
             </div>
             <div className="flex gap-5">
               <Link href="/" className="hover:text-slate-400 transition">Privacy Policy</Link>

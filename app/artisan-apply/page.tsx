@@ -112,7 +112,7 @@ export default function ArtisanApplyPage() {
             Grow your business<br />with SmartBooking
           </h1>
           <p className="text-slate-500 text-sm leading-relaxed mb-8">
-            Join hundreds of verified artisans across Ghana and Nigeria. Get discovered,
+            Join hundreds of verified artisans across Ghana. Get discovered,
             manage bookings, and get paid — all in one place.
           </p>
 
@@ -211,7 +211,7 @@ export default function ArtisanApplyPage() {
                 type="text"
                 name="location"
                 required
-                placeholder="e.g. Accra, Kumasi, Lagos, Abuja"
+                placeholder="e.g. Accra, Kumasi, Takoradi, Tamale"
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>

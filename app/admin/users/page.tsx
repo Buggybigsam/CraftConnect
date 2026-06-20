@@ -1,8 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft, Users } from "lucide-react"
+import { Users } from "lucide-react"
 
 const ROLE_STYLES: Record<string, string> = {
   CUSTOMER: "bg-indigo-50 text-indigo-700 border-indigo-100",
@@ -33,19 +32,6 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard" className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-sm transition">
-              <ArrowLeft size={14} /> Dashboard
-            </Link>
-            <span className="text-slate-200">|</span>
-            <span className="font-bold text-slate-900">SmartBooking Admin</span>
-          </div>
-          <Link href="/admin/bookings" className="text-sm text-slate-600 hover:text-slate-900 transition">Bookings</Link>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>

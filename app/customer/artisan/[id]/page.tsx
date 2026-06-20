@@ -41,17 +41,10 @@ export default async function ArtisanProfilePage({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <Link href="/customer/browse" className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-sm transition">
-            <ArrowLeft size={15} /> Back
-          </Link>
-          <span className="text-slate-200">|</span>
-          <Link href="/" className="font-bold text-slate-900">SmartBooking</Link>
-        </div>
-      </div>
-
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-5">
+        <Link href="/customer/browse" className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-900 text-sm transition">
+          <ArrowLeft size={14} /> Back to Browse
+        </Link>
 
         {/* Profile header */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 flex flex-col sm:flex-row gap-5">

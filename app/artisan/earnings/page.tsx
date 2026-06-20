@@ -1,8 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft, TrendingUp, DollarSign, Calendar, User } from "lucide-react"
+import { TrendingUp, DollarSign, Calendar, User } from "lucide-react"
 
 export default async function ArtisanEarningsPage() {
   const { userId } = await auth()
@@ -27,16 +26,6 @@ export default async function ArtisanEarningsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <Link href="/artisan/dashboard" className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-sm transition">
-            <ArrowLeft size={14} /> Dashboard
-          </Link>
-          <span className="text-slate-200">|</span>
-          <span className="font-bold text-slate-900">SmartBooking</span>
-        </div>
-      </div>
-
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">Earnings</h1>
 

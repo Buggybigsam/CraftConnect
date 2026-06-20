@@ -22,15 +22,11 @@ export default async function BookingPage({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link href={`/customer/artisan/${artisanId}`} className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-sm transition">
-            <ArrowLeft size={14} /> Back to profile
-          </Link>
-        </div>
-      </div>
-
       <div className="max-w-2xl mx-auto px-4 py-8">
+        <Link href={`/customer/artisan/${artisanId}`} className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-sm transition mb-5">
+          <ArrowLeft size={14} /> Back to profile
+        </Link>
+
         {/* Artisan mini-card */}
         <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 text-lg font-bold text-indigo-400">

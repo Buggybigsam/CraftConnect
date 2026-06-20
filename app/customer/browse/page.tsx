@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { MapPin, Star, User, ArrowLeft } from "lucide-react"
+import { MapPin, Star, User } from "lucide-react"
 import BrowseFilters from "./_filters"
 
 const CATEGORIES = [
@@ -49,22 +49,6 @@ export default async function BrowsePage({
 
   return (
     <div className="min-h-screen bg-slate-50">
-
-      {/* Topbar */}
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-slate-900">
-            <ArrowLeft size={16} className="text-slate-500" />
-            SmartBooking
-          </Link>
-          <Link
-            href="/customer/dashboard"
-            className="text-sm text-slate-600 hover:text-slate-900 transition"
-          >
-            My Bookings
-          </Link>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-1">Find an Artisan</h1>

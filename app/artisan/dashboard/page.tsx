@@ -76,16 +76,6 @@ export default async function ArtisanDashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* Topbar */}
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-bold text-slate-900">SmartBooking</Link>
-          <div className="flex gap-4 text-sm">
-            <Link href="/artisan/earnings" className="text-slate-600 hover:text-slate-900 transition">Earnings</Link>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900">Welcome, {artisan.user.name.split(" ")[0]}</h1>

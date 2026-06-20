@@ -49,15 +49,6 @@ export default async function CustomerDashboardPage({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b px-4 py-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/customer/browse" className="font-bold text-slate-900">SmartBooking</Link>
-          <Link href="/customer/browse" className="text-sm text-slate-600 hover:text-slate-900 transition">
-            Find Artisans
-          </Link>
-        </div>
-      </div>
-
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-2">My Bookings</h1>
         <p className="text-slate-500 text-sm mb-6">{bookings.length} booking{bookings.length !== 1 ? "s" : ""} total</p>

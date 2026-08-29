@@ -144,12 +144,25 @@ describe("PATCH /api/admin/artisans", () => {
     expect(res.status).toBe(200)
   })
 
-  it("propagates an error when artisanProfileId doesn't exist (no try/catch around the update)", async () => {
+  it("returns 404 when artisanProfileId doesn't exist", async () => {
     authMock.mockResolvedValue({ userId: "admin_1" })
     prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
     const notFoundError = Object.assign(new Error("Record not found"), { code: "P2025" })
     prismaMock.artisanProfile.update.mockRejectedValue(notFoundError)
 
-    await expect(PATCH(jsonRequest({ artisanProfileId: "missing", status: "APPROVED" }))).rejects.toThrow()
+    const res = await PATCH(jsonRequest({ artisanProfileId: "missing", status: "APPROVED" }))
+
+    expect(res.status).toBe(404)
+    expect(resendSendMock).not.toHaveBeenCalled()
+  })
+
+  it("propagates a non-P2025 database error instead of swallowing it", async () => {
+    authMock.mockResolvedValue({ userId: "admin_1" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+    prismaMock.artisanProfile.update.mockRejectedValue(new Error("connection lost"))
+
+    await expect(PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }))).rejects.toThrow(
+      "connection lost"
+    )
   })
 })

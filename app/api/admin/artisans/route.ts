@@ -16,11 +16,19 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 })
   }
 
-  const updatedProfile = await prisma.artisanProfile.update({
-    where: { id: artisanProfileId },
-    data: { status },
-    include: { user: { select: { email: true, name: true } } },
-  })
+  let updatedProfile
+  try {
+    updatedProfile = await prisma.artisanProfile.update({
+      where: { id: artisanProfileId },
+      data: { status },
+      include: { user: { select: { email: true, name: true } } },
+    })
+  } catch (err) {
+    if (typeof err === "object" && err !== null && "code" in err && (err as { code?: unknown }).code === "P2025") {
+      return NextResponse.json({ error: "Artisan profile not found" }, { status: 404 })
+    }
+    throw err
+  }
 
   const artisanEmail = updatedProfile.user.email
   const artisanName = updatedProfile.user.name

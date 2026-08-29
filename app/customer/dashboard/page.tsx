@@ -7,7 +7,7 @@ import ReviewForm from "./_review-form"
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING:   "bg-amber-50  text-amber-700  border-amber-200",
-  CONFIRMED: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  CONFIRMED: "bg-emerald-50 text-emerald-700 border-emerald-200",
   COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-200",
   CANCELLED: "bg-red-50    text-red-700    border-red-200",
 }
@@ -72,7 +72,7 @@ export default async function CustomerDashboardPage({
             <p className="text-slate-500 mb-4">No bookings yet.</p>
             <Link
               href="/customer/browse"
-              className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+              className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
             >
               Browse Artisans
             </Link>
@@ -90,8 +90,8 @@ export default async function CustomerDashboardPage({
                       alt={b.artisan.user.name}
                     />
                   ) : (
-                    <div className="w-11 h-11 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
-                      <User size={20} className="text-indigo-300" />
+                    <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                      <User size={20} className="text-emerald-300" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">

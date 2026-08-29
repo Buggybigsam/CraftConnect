@@ -2,7 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const publicPaths = ["/", "/sign-in", "/sign-up", "/artisan-apply", "/api/webhooks"]
+const publicPaths = ["/", "/sign-in", "/sign-up", "/artisan-apply", "/api/payments/webhook"]
 
 export default clerkMiddleware(async (auth, request: NextRequest) => {
   const { userId, sessionClaims } = await auth()
@@ -18,7 +18,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
   const role = (sessionClaims?.metadata as { role?: string })?.role
 
-  // Only redirect when the role is KNOWN to be wrong — never when it's undefined.
+  // Only redirect when the role is KNOWN to be wrong, never when it's undefined.
   // An undefined role means the session token was issued before /auth/redirect ran
   // (e.g. first sign-in). Letting the request through avoids an infinite redirect loop.
   if (role && path.startsWith("/customer") && role !== "CUSTOMER") {

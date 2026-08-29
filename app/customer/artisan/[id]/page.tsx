@@ -1,7 +1,17 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { MapPin, Star, User, ArrowLeft, Clock, Briefcase } from "lucide-react"
+
+const CATEGORY_PHOTOS: Record<string, string> = {
+  Electrician: "/images/artisans/electrician-outdoor-wall.jpg",
+  Plumber:     "/images/artisans/plumber-sink.jpg",
+  Carpenter:   "/images/artisans/carpenter-workshop.jpg",
+  Painter:     "/images/artisans/painter-roller.jpg",
+  Mechanic:    "/images/artisans/mechanic-engine.jpg",
+  Mason:       "/images/artisans/mason-bricklaying.jpg",
+}
 
 function StarDisplay({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
@@ -46,19 +56,34 @@ export default async function ArtisanProfilePage({
           <ArrowLeft size={14} /> Back to Browse
         </Link>
 
+        {/* Category banner */}
+        {CATEGORY_PHOTOS[artisan.category] && (
+          <div className="relative h-40 sm:h-52 w-full rounded-2xl overflow-hidden">
+            <Image
+              src={CATEGORY_PHOTOS[artisan.category]}
+              alt={`${artisan.category} at work`}
+              fill
+              sizes="100vw"
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+          </div>
+        )}
+
         {/* Profile header */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 flex flex-col sm:flex-row gap-5">
           {artisan.user.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={artisan.user.imageUrl} className="w-20 h-20 rounded-full object-cover shrink-0" alt={artisan.user.name} />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
-              <User size={36} className="text-indigo-300" />
+            <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+              <User size={36} className="text-emerald-300" />
             </div>
           )}
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-slate-900">{artisan.user.name}</h1>
-            <p className="text-indigo-600 font-medium text-sm">{artisan.category}</p>
+            <p className="text-emerald-600 font-medium text-sm">{artisan.category}</p>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-slate-500">
               <span className="flex items-center gap-1"><MapPin size={12} />{artisan.location}</span>
               <span className="flex items-center gap-1"><Briefcase size={12} />{artisan.yearsExp} yrs experience</span>
@@ -93,7 +118,7 @@ export default async function ArtisanProfilePage({
                     <div className="font-medium text-slate-900 text-sm">{s.title}</div>
                     <div className="text-slate-500 text-xs mt-0.5 leading-relaxed">{s.description}</div>
                   </div>
-                  <div className="text-indigo-700 font-bold text-sm shrink-0">GHS {s.price}</div>
+                  <div className="text-emerald-700 font-bold text-sm shrink-0">GHS {s.price}</div>
                 </div>
               ))}
             </div>
@@ -101,15 +126,15 @@ export default async function ArtisanProfilePage({
         )}
 
         {/* Book CTA */}
-        <div className="bg-indigo-600 rounded-2xl p-6 text-white">
+        <div className="bg-emerald-600 rounded-2xl p-6 text-white">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="font-bold text-lg">Ready to book {artisan.user.name}?</h2>
-              <p className="text-indigo-200 text-sm mt-0.5">Pick a date and time that works for you.</p>
+              <p className="text-emerald-200 text-sm mt-0.5">Pick a date and time that works for you.</p>
             </div>
             <Link
               href={`/customer/booking/${artisan.userId}`}
-              className="shrink-0 bg-white text-indigo-700 font-semibold px-7 py-3 rounded-xl hover:bg-indigo-50 transition text-sm"
+              className="shrink-0 bg-white text-emerald-700 font-semibold px-7 py-3 rounded-xl hover:bg-emerald-50 transition text-sm"
             >
               Book Now
             </Link>
@@ -126,8 +151,8 @@ export default async function ArtisanProfilePage({
               {artisan.reviews.map((r) => (
                 <div key={r.id} className="border-b border-slate-50 last:border-0 pb-4 last:pb-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-7 h-7 rounded-full bg-indigo-50 flex items-center justify-center">
-                      <User size={14} className="text-indigo-300" />
+                    <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center">
+                      <User size={14} className="text-emerald-300" />
                     </div>
                     <span className="font-medium text-sm text-slate-900">{r.customer.name}</span>
                     <StarDisplay rating={r.rating} />

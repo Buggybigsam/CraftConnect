@@ -33,11 +33,11 @@ export default async function AdminDashboardPage() {
         {/* Platform stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm text-center">
-            <div className="text-3xl font-bold text-indigo-600">{totalUsers}</div>
+            <div className="text-3xl font-bold text-emerald-600">{totalUsers}</div>
             <div className="text-sm text-slate-500 mt-1">Total Users</div>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm text-center">
-            <div className="text-3xl font-bold text-violet-600">{totalBookings}</div>
+            <div className="text-3xl font-bold text-slate-900">{totalBookings}</div>
             <div className="text-sm text-slate-500 mt-1">Total Bookings</div>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm text-center">
@@ -64,7 +64,7 @@ export default async function AdminDashboardPage() {
 
         {pendingArtisans.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-slate-500 text-sm">
-            All caught up — no pending applications.
+            All caught up. No pending applications.
           </div>
         ) : (
           <div className="space-y-3">
@@ -73,7 +73,7 @@ export default async function AdminDashboardPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="font-semibold text-slate-900">{a.user.name}</div>
-                    <div className="text-sm text-indigo-600 font-medium">{a.category}</div>
+                    <div className="text-sm text-emerald-600 font-medium">{a.category}</div>
                     <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-1">
                       <span className="flex items-center gap-1"><MapPin size={11} />{a.location}</span>
                       <span className="flex items-center gap-1"><Briefcase size={11} />{a.yearsExp} yrs exp</span>

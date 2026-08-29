@@ -7,7 +7,7 @@ import ArtisanBookingActions from "./_actions"
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING:   "bg-amber-50  text-amber-700  border-amber-100",
-  CONFIRMED: "bg-indigo-50 text-indigo-700 border-indigo-100",
+  CONFIRMED: "bg-emerald-50 text-emerald-700 border-emerald-100",
   COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-100",
   CANCELLED: "bg-red-50    text-red-700    border-red-100",
 }
@@ -32,7 +32,7 @@ export default async function ArtisanDashboardPage() {
           </div>
           <h1 className="text-xl font-bold text-slate-900 mb-2">Application Under Review</h1>
           <p className="text-slate-500 text-sm leading-relaxed">
-            Your artisan profile is being reviewed by our team. You&apos;ll receive an email once approved — usually within 24 hours.
+            Your artisan profile is being reviewed by our team. You&apos;ll receive an email once approved, usually within 24 hours.
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export default async function ArtisanDashboardPage() {
           <p className="text-slate-500 text-sm mb-6 leading-relaxed">
             Your application was not approved. Please contact support for more information.
           </p>
-          <Link href="/" className="text-indigo-600 hover:underline text-sm font-medium">Go home</Link>
+          <Link href="/" className="text-emerald-600 hover:underline text-sm font-medium">Go home</Link>
         </div>
       </div>
     )
@@ -95,8 +95,8 @@ export default async function ArtisanDashboardPage() {
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center">
-                <CalendarCheck size={16} className="text-indigo-500" />
+              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <CalendarCheck size={16} className="text-emerald-500" />
               </div>
               <span className="text-sm text-slate-500">Confirmed</span>
             </div>

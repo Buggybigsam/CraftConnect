@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { Users } from "lucide-react"
 
 const ROLE_STYLES: Record<string, string> = {
-  CUSTOMER: "bg-indigo-50 text-indigo-700 border-indigo-100",
+  CUSTOMER: "bg-emerald-50 text-emerald-700 border-emerald-100",
   ARTISAN:  "bg-emerald-50 text-emerald-700 border-emerald-100",
   ADMIN:    "bg-violet-50 text-violet-700 border-violet-100",
 }
@@ -38,8 +38,8 @@ export default async function AdminUsersPage() {
             <h1 className="text-2xl font-bold text-slate-900">All Users</h1>
             <p className="text-slate-500 text-sm mt-1">{users.length} total · {customers} customers · {artisans} artisans</p>
           </div>
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-            <Users size={18} className="text-indigo-600" />
+          <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+            <Users size={18} className="text-emerald-600" />
           </div>
         </div>
 
@@ -69,7 +69,7 @@ export default async function AdminUsersPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500">{u.location ?? <span className="text-slate-300">—</span>}</td>
+                  <td className="px-5 py-3.5 text-slate-500">{u.location ?? <span className="text-slate-300">-</span>}</td>
                   <td className="px-5 py-3.5 text-slate-400 text-xs">
                     {new Date(u.createdAt).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
                   </td>

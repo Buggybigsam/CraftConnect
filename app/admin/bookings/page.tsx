@@ -5,7 +5,7 @@ import { CalendarDays } from "lucide-react"
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING:   "bg-amber-50  text-amber-700  border-amber-100",
-  CONFIRMED: "bg-indigo-50 text-indigo-700 border-indigo-100",
+  CONFIRMED: "bg-emerald-50 text-emerald-700 border-emerald-100",
   COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-100",
   CANCELLED: "bg-red-50    text-red-700    border-red-100",
 }
@@ -48,8 +48,8 @@ export default async function AdminBookingsPage() {
               {bookings.length} total · GHS {revenue.toFixed(0)} revenue collected
             </p>
           </div>
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-            <CalendarDays size={18} className="text-indigo-600" />
+          <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+            <CalendarDays size={18} className="text-emerald-600" />
           </div>
         </div>
 
@@ -91,7 +91,7 @@ export default async function AdminBookingsPage() {
                         <span className="text-xs text-slate-400 ml-1">· {b.payment.status}</span>
                       </div>
                     ) : (
-                      <span className="text-slate-300 text-xs">—</span>
+                      <span className="text-slate-300 text-xs">-</span>
                     )}
                   </td>
                 </tr>

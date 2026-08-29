@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import Link from "next/link"
+import Image from "next/image"
 import {
   Zap, Wrench, Sparkles, Hammer, Paintbrush, Car, BookOpen, Building2,
   ArrowLeft, CheckCircle, Loader2, ChevronDown,
@@ -34,13 +35,6 @@ export default function ArtisanApplyPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState("")
   const [category, setCategory] = useState("")
-
-  // Redirect unauthenticated users to sign-up immediately
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.replace("/sign-up")
-    }
-  }, [isLoaded, user, router])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -74,11 +68,11 @@ export default function ArtisanApplyPage() {
     router.push("/artisan/dashboard")
   }
 
-  // Show spinner while loading or redirecting
-  if (!isLoaded || !user) {
+  // Wait for Clerk to resolve auth state before rendering
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 size={24} className="animate-spin text-indigo-500" />
+        <Loader2 size={24} className="animate-spin text-emerald-500" />
       </div>
     )
   }
@@ -90,7 +84,7 @@ export default function ArtisanApplyPage() {
       <nav className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-slate-900">
-            <span className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center">
+            <span className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center">
               <Zap size={12} className="text-white" />
             </span>
             SmartBooking
@@ -103,37 +97,47 @@ export default function ArtisanApplyPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-12 grid lg:grid-cols-[1fr_1.6fr] gap-10 items-start">
 
-        {/* Left panel — benefits */}
+        {/* Left panel: benefits */}
         <div className="lg:sticky lg:top-24">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-5 border border-indigo-100">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-5 border border-emerald-100">
             <Zap size={11} /> For Artisans
           </div>
           <h1 className="text-3xl font-bold text-slate-900 leading-tight mb-3">
             Grow your business<br />with SmartBooking
           </h1>
-          <p className="text-slate-500 text-sm leading-relaxed mb-8">
+          <p className="text-slate-500 text-sm leading-relaxed mb-6">
             Join hundreds of verified artisans across Ghana. Get discovered,
-            manage bookings, and get paid — all in one place.
+            manage bookings, and get paid, all in one place.
           </p>
+
+          <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-8">
+            <Image
+              src="/images/artisans/roofer.jpg"
+              alt="Artisan working on SmartBooking"
+              fill
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="object-cover"
+            />
+          </div>
 
           <ul className="space-y-3 mb-8">
             {PERKS.map((perk) => (
               <li key={perk} className="flex items-start gap-3 text-sm text-slate-700">
-                <CheckCircle size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+                <CheckCircle size={16} className="text-emerald-500 mt-0.5 shrink-0" />
                 {perk}
               </li>
             ))}
           </ul>
 
-          <div className="bg-indigo-600 rounded-2xl p-5 text-white">
+          <div className="bg-emerald-600 rounded-2xl p-5 text-white">
             <p className="text-sm font-semibold mb-1">Free to apply</p>
-            <p className="text-indigo-200 text-xs leading-relaxed">
+            <p className="text-emerald-200 text-xs leading-relaxed">
               No upfront cost. We review your profile and activate it within 24 hours.
             </p>
           </div>
         </div>
 
-        {/* Right panel — form */}
+        {/* Right panel: form */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-50">
             <h2 className="font-semibold text-slate-900">Your Application</h2>
@@ -151,7 +155,7 @@ export default function ArtisanApplyPage() {
                   required
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full appearance-none border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10"
+                  className="w-full appearance-none border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent pr-10"
                 >
                   <option value="">Select your trade...</option>
                   {CATEGORIES.map(({ value }) => (
@@ -170,11 +174,11 @@ export default function ArtisanApplyPage() {
                 required
                 rows={4}
                 placeholder="Describe your skills, experience, and what makes you stand out..."
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
               />
             </div>
 
-            {/* Price & Experience — 2 col */}
+            {/* Price & Experience: 2 col */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -186,7 +190,7 @@ export default function ArtisanApplyPage() {
                   required
                   min={1}
                   placeholder="e.g. 80"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -199,7 +203,7 @@ export default function ArtisanApplyPage() {
                   required
                   min={0}
                   placeholder="e.g. 5"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -212,7 +216,7 @@ export default function ArtisanApplyPage() {
                 name="location"
                 required
                 placeholder="e.g. Accra, Kumasi, Takoradi, Tamale"
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 
@@ -224,7 +228,7 @@ export default function ArtisanApplyPage() {
                 name="phone"
                 required
                 placeholder="+233 XX XXX XXXX"
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 
@@ -237,17 +241,21 @@ export default function ArtisanApplyPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-60 transition text-sm"
+              className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-60 transition text-sm"
             >
               {loading ? (
                 <><Loader2 size={16} className="animate-spin" /> Submitting...</>
-              ) : (
+              ) : user ? (
                 "Submit Application"
+              ) : (
+                "Sign Up to Apply"
               )}
             </button>
 
             <p className="text-center text-xs text-slate-400">
-              By applying you agree to our artisan terms. Your profile goes live after admin approval.
+              {user
+                ? "By applying you agree to our artisan terms. Your profile goes live after admin approval."
+                : "You'll create a free account first, then your details here are submitted automatically."}
             </p>
           </form>
         </div>

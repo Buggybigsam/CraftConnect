@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
 interface Service {
   id: string
@@ -14,11 +13,9 @@ interface Props {
   artisanUserId: string
   artisanName: string
   services: Service[]
-  customerId: string
 }
 
-export default function BookingForm({ artisanUserId, services, customerId }: Props) {
-  const router = useRouter()
+export default function BookingForm({ artisanUserId, services }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [selectedService, setSelectedService] = useState(services[0]?.id ?? "")
@@ -34,7 +31,6 @@ export default function BookingForm({ artisanUserId, services, customerId }: Pro
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         artisanUserId,
-        customerId,
         serviceId: fd.get("serviceId"),
         date: fd.get("date"),
         notes: fd.get("notes"),
@@ -65,7 +61,7 @@ export default function BookingForm({ artisanUserId, services, customerId }: Pro
               <label
                 key={s.id}
                 className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
-                  selectedService === s.id ? "border-indigo-600 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
+                  selectedService === s.id ? "border-emerald-600 bg-emerald-50" : "border-gray-200 hover:border-emerald-300"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -75,14 +71,14 @@ export default function BookingForm({ artisanUserId, services, customerId }: Pro
                     value={s.id}
                     checked={selectedService === s.id}
                     onChange={() => setSelectedService(s.id)}
-                    className="accent-indigo-600"
+                    className="accent-emerald-600"
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-900">{s.title}</div>
                     <div className="text-xs text-gray-500">{s.description}</div>
                   </div>
                 </div>
-                <div className="font-semibold text-indigo-700">GHS {s.price}</div>
+                <div className="font-semibold text-emerald-700">GHS {s.price}</div>
               </label>
             ))}
           </div>
@@ -131,7 +127,7 @@ export default function BookingForm({ artisanUserId, services, customerId }: Pro
       <button
         type="submit"
         disabled={loading || !selectedService}
-        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50"
       >
         {loading ? "Processing..." : "Proceed to Payment"}
       </button>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import Image from "next/image"
 import { MapPin, Star, User } from "lucide-react"
 import BrowseFilters from "./_filters"
 
@@ -7,6 +8,15 @@ const CATEGORIES = [
   "All", "Electrician", "Plumber", "Cleaner", "Carpenter",
   "Painter", "Mechanic", "Tutor", "Mason", "Other",
 ]
+
+const CATEGORY_PHOTOS: Record<string, string> = {
+  Electrician: "/images/artisans/electrician-wiring.jpg",
+  Plumber:     "/images/artisans/plumber-sink.jpg",
+  Carpenter:   "/images/artisans/carpenter-workshop.jpg",
+  Painter:     "/images/artisans/painter-roller.jpg",
+  Mechanic:    "/images/artisans/mechanic-engine.jpg",
+  Mason:       "/images/artisans/mason-plastering.jpg",
+}
 
 interface SearchParams {
   q?: string
@@ -66,8 +76,8 @@ export default async function BrowsePage({
                 href={`/customer/browse?${new URLSearchParams({ ...params, category: cat === "All" ? "" : cat })}`}
                 className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition ${
                   active
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-slate-700 border-slate-200 hover:border-indigo-400"
+                    ? "bg-emerald-600 text-white border-emerald-600"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-emerald-400"
                 }`}
               >
                 {cat}
@@ -88,20 +98,32 @@ export default async function BrowsePage({
               <Link
                 key={a.id}
                 href={`/customer/artisan/${a.userId}`}
-                className="bg-white rounded-2xl p-5 border border-slate-100 hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                className="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-emerald-200 hover:shadow-md hover:-translate-y-0.5 transition-all"
               >
+                {CATEGORY_PHOTOS[a.category] && (
+                  <div className="relative h-32 w-full">
+                    <Image
+                      src={CATEGORY_PHOTOS[a.category]}
+                      alt={`${a.category} at work`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 25vw"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="p-5">
                 <div className="flex items-center gap-3 mb-3">
                   {a.user.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={a.user.imageUrl} className="w-11 h-11 rounded-full object-cover" alt={a.user.name} />
                   ) : (
-                    <div className="w-11 h-11 rounded-full bg-indigo-50 flex items-center justify-center">
-                      <User size={20} className="text-indigo-400" />
+                    <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center">
+                      <User size={20} className="text-emerald-400" />
                     </div>
                   )}
                   <div>
                     <div className="font-semibold text-slate-900 text-sm">{a.user.name}</div>
-                    <div className="text-xs text-indigo-600 font-medium">{a.category}</div>
+                    <div className="text-xs text-emerald-600 font-medium">{a.category}</div>
                   </div>
                 </div>
 
@@ -121,6 +143,7 @@ export default async function BrowsePage({
                 <div className="flex items-center gap-1 text-xs text-slate-400">
                   <MapPin size={11} />
                   {a.location}
+                </div>
                 </div>
               </Link>
             ))}

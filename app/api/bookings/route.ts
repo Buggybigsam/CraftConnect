@@ -1,10 +1,29 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit"
+
+const BOOKINGS_RATE_LIMIT = 10
+const BOOKINGS_RATE_WINDOW_MS = 60 * 1000
+
+// Prisma's generated error class carries a `code` field (e.g. "P2002" for a
+// unique-constraint violation). We check duck-typed shape rather than importing
+// the class so this stays decoupled from the generated client's exact path.
+function isUniqueConstraintError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code?: unknown }).code === "P2002"
+  )
+}
 
 export async function POST(request: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const rateLimit = checkRateLimit(`bookings:${getClientIp(request)}`, BOOKINGS_RATE_LIMIT, BOOKINGS_RATE_WINDOW_MS)
+  if (!rateLimit.ok) return rateLimitResponse(rateLimit)
 
   const { artisanUserId, serviceId, date, notes } = await request.json()
 
@@ -12,16 +31,24 @@ export async function POST(request: Request) {
     const service = await prisma.service.findUnique({ where: { id: serviceId } })
     if (!service) return NextResponse.json({ error: "Service not found" }, { status: 404 })
 
-    const booking = await prisma.booking.create({
-      data: {
-        customerId: userId,
-        artisanId: service.artisanId,
-        serviceId,
-        date: new Date(date),
-        notes,
-        status: "PENDING",
-      },
-    })
+    let booking
+    try {
+      booking = await prisma.booking.create({
+        data: {
+          customerId: userId,
+          artisanId: service.artisanId,
+          serviceId,
+          date: new Date(date),
+          notes,
+          status: "PENDING",
+        },
+      })
+    } catch (err) {
+      if (isUniqueConstraintError(err)) {
+        return NextResponse.json({ error: "This slot is already booked" }, { status: 409 })
+      }
+      throw err
+    }
 
     // Initialize Paystack payment
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
@@ -108,6 +135,11 @@ export async function PATCH(request: Request) {
 
   const { bookingId, status } = await request.json()
 
+  const allowedStatuses = ["CONFIRMED", "CANCELLED"]
+  if (!allowedStatuses.includes(status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 })
+  }
+
   const artisan = await prisma.artisanProfile.findUnique({ where: { userId } })
   if (!artisan) return NextResponse.json({ error: "Not an artisan" }, { status: 403 })
 
@@ -116,10 +148,18 @@ export async function PATCH(request: Request) {
   })
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 })
 
-  const updated = await prisma.booking.update({
-    where: { id: bookingId },
+  // Guard the PENDING -> {CONFIRMED,CANCELLED} transition atomically. Checking
+  // booking.status above and then updating separately left a window where two
+  // concurrent requests could both pass the check and both apply their update.
+  const result = await prisma.booking.updateMany({
+    where: { id: bookingId, artisanId: artisan.id, status: "PENDING" },
     data: { status },
   })
 
+  if (result.count === 0) {
+    return NextResponse.json({ error: "Booking already actioned" }, { status: 409 })
+  }
+
+  const updated = await prisma.booking.findUnique({ where: { id: bookingId } })
   return NextResponse.json(updated)
 }

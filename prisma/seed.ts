@@ -106,7 +106,7 @@ const ARTISANS = [
       totalReviews: 19,
     },
     services: [
-      { title: "Custom Furniture",      description: "Beds, tables, chairs — made to order",     price: 400, category: "Carpenter" },
+      { title: "Custom Furniture",      description: "Beds, tables, chairs, made to order",     price: 400, category: "Carpenter" },
       { title: "Kitchen Cabinets",      description: "Design and install kitchen cupboards",      price: 600, category: "Carpenter" },
       { title: "Door & Window Frames",  description: "Wooden frames, doors, and shutters",       price: 250, category: "Carpenter" },
     ],
@@ -216,6 +216,73 @@ const ARTISANS = [
       { title: "Move-In / Move-Out",      description: "Clean before or after moving",           price: 280, category: "Cleaner" },
     ],
   },
+  {
+    id: "seed_user_esi",
+    name: "Esi Bonsu",
+    email: "esi.bonsu@seed.com",
+    location: "Accra, Ghana",
+    phone: "+233 27 111 0022",
+    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Esi",
+    profile: {
+      category: "Tutor",
+      bio: "English language and ICT tutor for JHS and SHS students. I focus on comprehension, essay writing, and basic computer literacy with patient, practical lessons.",
+      pricePerHour: 55,
+      yearsExp: 3,
+      rating: 4.6,
+      totalReviews: 12,
+    },
+    services: [
+      { title: "English Tutoring",      description: "Grammar, comprehension, essay writing",   price: 55,  category: "Tutor" },
+      { title: "ICT Basics",            description: "Computer literacy for beginners",         price: 50,  category: "Tutor" },
+    ],
+  },
+  {
+    id: "seed_user_kojo",
+    name: "Kojo Mensah",
+    email: "kojo.mensah@seed.com",
+    location: "Tamale, Ghana",
+    phone: "+233 20 222 0033",
+    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kojo",
+    profile: {
+      category: "Mason",
+      bio: "New to the platform but experienced on-site for 5 years. I handle small residential jobs: block work, plastering, and simple concrete repairs at fair rates.",
+      pricePerHour: 60,
+      yearsExp: 5,
+      rating: 4.3,
+      totalReviews: 3,
+    },
+    services: [
+      { title: "Block Work",            description: "Small wall and boundary block laying",    price: 220, category: "Mason" },
+      { title: "Concrete Repairs",      description: "Patch and repair damaged concrete",       price: 150, category: "Mason" },
+    ],
+  },
+]
+
+const CUSTOMERS = [
+  {
+    id: "seed_customer_yaa",
+    name: "Yaa Asantewaa",
+    email: "yaa.asantewaa@seed.com",
+    location: "Accra, Ghana",
+    phone: "+233 24 900 1122",
+    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=YaaCustomer",
+  },
+  {
+    id: "seed_customer_kwabena",
+    name: "Kwabena Sarpong",
+    email: "kwabena.sarpong@seed.com",
+    location: "Kumasi, Ghana",
+    phone: "+233 54 900 2233",
+    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=KwabenaCustomer",
+  },
+  {
+    id: "seed_customer_akosua",
+    name: "Akosua Frimpong",
+    email: "akosua.frimpong@seed.com",
+    location: "Tema, Ghana",
+    phone: "+233 20 900 3344",
+    imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=AkosuaCustomer",
+  },
 ]
 
 async function main() {
@@ -283,6 +350,27 @@ async function main() {
   }
 
   console.log(`\n✅ Seeded ${ARTISANS.length} artisans with services.`)
+
+  console.log("\n🌱 Seeding dummy customers...")
+
+  for (const c of CUSTOMERS) {
+    await prisma.user.upsert({
+      where:  { id: c.id },
+      update: { name: c.name, location: c.location, phone: c.phone },
+      create: {
+        id:       c.id,
+        name:     c.name,
+        email:    c.email,
+        role:     "CUSTOMER",
+        location: c.location,
+        phone:    c.phone,
+        imageUrl: c.imageUrl,
+      },
+    })
+    console.log(`  ✓ ${c.name} (${c.location})`)
+  }
+
+  console.log(`\n✅ Seeded ${CUSTOMERS.length} customers.`)
 }
 
 main()

@@ -66,6 +66,10 @@ model ArtisanProfile {
   services Service[]
   bookings Booking[] @relation("ArtisanBookings")
   reviews  Review[]
+
+  @@index([status])
+  @@index([category])
+  @@index([location])
 }
 
 model Service {
@@ -97,6 +101,11 @@ model Booking {
 
   payment Payment?
   review  Review?
+
+  @@unique([artisanId, date])
+  @@index([customerId])
+  @@index([artisanId])
+  @@index([status])
 }
 
 model Payment {

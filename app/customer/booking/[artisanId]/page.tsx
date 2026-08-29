@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { auth } from "@clerk/nextjs/server"
 import Link from "next/link"
 import { ArrowLeft, MapPin, Star, Clock } from "lucide-react"
@@ -12,6 +12,7 @@ export default async function BookingPage({
 }) {
   const { artisanId } = await params
   const { userId } = await auth()
+  if (!userId) redirect("/sign-in")
 
   const artisan = await prisma.artisanProfile.findFirst({
     where:   { userId: artisanId, status: "APPROVED" },
@@ -29,12 +30,12 @@ export default async function BookingPage({
 
         {/* Artisan mini-card */}
         <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 text-lg font-bold text-indigo-400">
+          <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-400">
             {artisan.user.name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-slate-900">{artisan.user.name}</div>
-            <div className="text-xs text-indigo-600 font-medium">{artisan.category}</div>
+            <div className="text-xs text-emerald-600 font-medium">{artisan.category}</div>
             <div className="flex flex-wrap gap-3 mt-1 text-xs text-slate-500">
               <span className="flex items-center gap-1"><MapPin size={10} />{artisan.location}</span>
               <span className="flex items-center gap-1"><Star size={10} className="fill-amber-400 text-amber-400" />{artisan.rating.toFixed(1)} ({artisan.totalReviews})</span>
@@ -50,7 +51,6 @@ export default async function BookingPage({
           artisanUserId={artisan.userId}
           artisanName={artisan.user.name}
           services={artisan.services}
-          customerId={userId!}
         />
       </div>
     </div>

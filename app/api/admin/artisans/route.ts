@@ -10,12 +10,20 @@ export async function PATCH(request: Request) {
   const admin = await prisma.user.findUnique({ where: { id: userId } })
   if (!admin || admin.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-  const { artisanProfileId, status, artisanEmail, artisanName } = await request.json()
+  const { artisanProfileId, status } = await request.json()
 
-  await prisma.artisanProfile.update({
+  if (!["APPROVED", "REJECTED"].includes(status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 })
+  }
+
+  const updatedProfile = await prisma.artisanProfile.update({
     where: { id: artisanProfileId },
     data: { status },
+    include: { user: { select: { email: true, name: true } } },
   })
+
+  const artisanEmail = updatedProfile.user.email
+  const artisanName = updatedProfile.user.name
 
   const message =
     status === "APPROVED"
@@ -25,7 +33,7 @@ export async function PATCH(request: Request) {
   await resend.emails.send({
     from: FROM_EMAIL,
     to: artisanEmail,
-    subject: status === "APPROVED" ? "Your Profile is Approved — SmartBooking" : "Application Update — SmartBooking",
+    subject: status === "APPROVED" ? "Your Profile is Approved - SmartBooking" : "Application Update - SmartBooking",
     html: message,
   }).catch(console.error)
 

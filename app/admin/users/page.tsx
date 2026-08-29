@@ -44,7 +44,7 @@ export default async function AdminUsersPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+          <table className="hidden md:table w-full text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
@@ -77,6 +77,34 @@ export default async function AdminUsersPage() {
               ))}
             </tbody>
           </table>
+
+          <div className="md:hidden divide-y divide-slate-50">
+            {users.map((u) => (
+              <div key={u.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-slate-900">{u.name}</div>
+                    <div className="text-xs text-slate-400">{u.email}</div>
+                  </div>
+                  <span className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${ROLE_STYLES[u.role]}`}>
+                    {u.role}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>{u.location ?? <span className="text-slate-300">-</span>}</span>
+                  <span className="text-slate-400">
+                    {new Date(u.createdAt).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </div>
+                {u.artisanProfile && (
+                  <span className={`inline-block text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status]}`}>
+                    {u.artisanProfile.status}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
           {users.length === 0 && (
             <div className="py-16 text-center text-slate-400 text-sm">No users yet.</div>
           )}

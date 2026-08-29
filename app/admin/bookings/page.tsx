@@ -54,7 +54,7 @@ export default async function AdminBookingsPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+          <table className="hidden md:table w-full text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Customer</th>
@@ -98,6 +98,35 @@ export default async function AdminBookingsPage() {
               ))}
             </tbody>
           </table>
+
+          <div className="md:hidden divide-y divide-slate-50">
+            {bookings.map((b) => (
+              <div key={b.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-slate-900">{b.customer.name}</div>
+                    <div className="text-xs text-slate-400">{b.customer.email}</div>
+                  </div>
+                  <span className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[b.status]}`}>
+                    {b.status}
+                  </span>
+                </div>
+                <div className="text-sm text-slate-700">{b.service.title} · {b.artisan.user.name}</div>
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>{new Date(b.date).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}</span>
+                  {b.payment ? (
+                    <span>
+                      <span className={PAYMENT_STYLES[b.payment.status]}>GHS {b.payment.amount}</span>
+                      <span className="text-slate-400 ml-1">· {b.payment.status}</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-300">-</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
           {bookings.length === 0 && (
             <div className="py-16 text-center text-slate-400 text-sm">No bookings yet.</div>
           )}

@@ -81,6 +81,16 @@ describe("POST /api/bookings", () => {
     expect(res.status).toBe(200)
   })
 
+  it("returns 400 for an unparseable date instead of 500ing", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+    prismaMock.service.findUnique.mockResolvedValue({ id: "svc_1", artisanId: "artisan_1", price: 100 })
+
+    const res = await POST(jsonRequest({ serviceId: "svc_1", date: "not-a-date" }))
+
+    expect(res.status).toBe(400)
+    expect(prismaMock.booking.create).not.toHaveBeenCalled()
+  })
+
   it("normalizes seconds/milliseconds off the booking date so near-identical timestamps collide", async () => {
     authMock.mockResolvedValue({ userId: "cust_1" })
     prismaMock.service.findUnique.mockResolvedValue({ id: "svc_1", artisanId: "artisan_1", price: 100 })

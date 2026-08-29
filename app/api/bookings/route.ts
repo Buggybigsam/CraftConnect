@@ -35,6 +35,9 @@ export async function POST(request: Request) {
     // catches two bookings for the same displayed slot instead of letting
     // millisecond-apart timestamps both through.
     const slotDate = new Date(date)
+    if (Number.isNaN(slotDate.getTime())) {
+      return NextResponse.json({ error: "Invalid date" }, { status: 400 })
+    }
     slotDate.setSeconds(0, 0)
 
     let booking

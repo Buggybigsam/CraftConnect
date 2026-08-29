@@ -136,6 +136,20 @@ describe("POST /api/payments/webhook", () => {
     expect(res.status).toBe(200)
   })
 
+  it("acknowledges instead of erroring when the booking behind a confirmed payment no longer exists", async () => {
+    const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
+    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_gone", status: "PENDING" })
+    prismaMock.payment.update.mockResolvedValue({})
+    const notFoundError = Object.assign(new Error("Record not found"), { code: "P2025" })
+    prismaMock.booking.update.mockRejectedValue(notFoundError)
+
+    const res = await POST(webhookRequest(body))
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.received).toBe(true)
+  })
+
   it("returns 500 when the database update fails after signature verification passes", async () => {
     const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
     prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_1", status: "PENDING" })

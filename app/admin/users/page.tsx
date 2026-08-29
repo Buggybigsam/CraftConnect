@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Users } from "lucide-react"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 const ROLE_STYLES: Record<string, string> = {
   CUSTOMER: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -14,6 +15,7 @@ const STATUS_STYLES: Record<string, string> = {
   APPROVED: "text-emerald-600",
   REJECTED: "text-red-500",
 }
+const STATUS_FALLBACK_STYLE = "text-slate-400"
 
 export default async function AdminUsersPage() {
   const { userId } = await auth()
@@ -60,11 +62,9 @@ export default async function AdminUsersPage() {
                   <td className="px-5 py-3.5 font-medium text-slate-900">{u.name}</td>
                   <td className="px-5 py-3.5 text-slate-500">{u.email}</td>
                   <td className="px-5 py-3.5">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${ROLE_STYLES[u.role]}`}>
-                      {u.role}
-                    </span>
+                    <StatusBadge value={u.role} styles={ROLE_STYLES} />
                     {u.artisanProfile && (
-                      <span className={`ml-2 text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status]}`}>
+                      <span className={`ml-2 text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status] ?? STATUS_FALLBACK_STYLE}`}>
                         {u.artisanProfile.status}
                       </span>
                     )}
@@ -86,9 +86,7 @@ export default async function AdminUsersPage() {
                     <div className="font-medium text-slate-900">{u.name}</div>
                     <div className="text-xs text-slate-400">{u.email}</div>
                   </div>
-                  <span className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${ROLE_STYLES[u.role]}`}>
-                    {u.role}
-                  </span>
+                  <StatusBadge value={u.role} styles={ROLE_STYLES} className="shrink-0" />
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span>{u.location ?? <span className="text-slate-300">-</span>}</span>
@@ -97,7 +95,7 @@ export default async function AdminUsersPage() {
                   </span>
                 </div>
                 {u.artisanProfile && (
-                  <span className={`inline-block text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status]}`}>
+                  <span className={`inline-block text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status] ?? STATUS_FALLBACK_STYLE}`}>
                     {u.artisanProfile.status}
                   </span>
                 )}

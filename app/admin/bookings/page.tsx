@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { CalendarDays } from "lucide-react"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING:   "bg-amber-50  text-amber-700  border-amber-100",
@@ -15,6 +16,7 @@ const PAYMENT_STYLES: Record<string, string> = {
   PENDING: "text-amber-500",
   FAILED:  "text-red-500",
 }
+const PAYMENT_FALLBACK_STYLE = "text-slate-400"
 
 export default async function AdminBookingsPage() {
   const { userId } = await auth()
@@ -78,14 +80,12 @@ export default async function AdminBookingsPage() {
                     {new Date(b.date).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[b.status]}`}>
-                      {b.status}
-                    </span>
+                    <StatusBadge value={b.status} styles={STATUS_STYLES} />
                   </td>
                   <td className="px-5 py-3.5">
                     {b.payment ? (
                       <div>
-                        <span className={`text-xs ${PAYMENT_STYLES[b.payment.status]}`}>
+                        <span className={`text-xs ${PAYMENT_STYLES[b.payment.status] ?? PAYMENT_FALLBACK_STYLE}`}>
                           GHS {b.payment.amount}
                         </span>
                         <span className="text-xs text-slate-400 ml-1">· {b.payment.status}</span>
@@ -107,16 +107,14 @@ export default async function AdminBookingsPage() {
                     <div className="font-medium text-slate-900">{b.customer.name}</div>
                     <div className="text-xs text-slate-400">{b.customer.email}</div>
                   </div>
-                  <span className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[b.status]}`}>
-                    {b.status}
-                  </span>
+                  <StatusBadge value={b.status} styles={STATUS_STYLES} className="shrink-0" />
                 </div>
                 <div className="text-sm text-slate-700">{b.service.title} · {b.artisan.user.name}</div>
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span>{new Date(b.date).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}</span>
                   {b.payment ? (
                     <span>
-                      <span className={PAYMENT_STYLES[b.payment.status]}>GHS {b.payment.amount}</span>
+                      <span className={PAYMENT_STYLES[b.payment.status] ?? PAYMENT_FALLBACK_STYLE}>GHS {b.payment.amount}</span>
                       <span className="text-slate-400 ml-1">· {b.payment.status}</span>
                     </span>
                   ) : (

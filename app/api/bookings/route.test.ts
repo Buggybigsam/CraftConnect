@@ -81,6 +81,22 @@ describe("POST /api/bookings", () => {
     expect(res.status).toBe(200)
   })
 
+  it("normalizes seconds/milliseconds off the booking date so near-identical timestamps collide", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+    prismaMock.service.findUnique.mockResolvedValue({ id: "svc_1", artisanId: "artisan_1", price: 100 })
+    prismaMock.booking.create.mockResolvedValue({ id: "booking_1", status: "PENDING" })
+    prismaMock.user.findUnique.mockResolvedValue({ email: "cust@example.com" })
+    prismaMock.payment.create.mockResolvedValue({})
+
+    await POST(jsonRequest({ serviceId: "svc_1", date: "2026-09-01T10:00:00.999Z" }))
+
+    expect(prismaMock.booking.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        date: new Date("2026-09-01T10:00:00.000Z"),
+      }),
+    })
+  })
+
   it("returns 409 when the artisan already has a booking for that exact slot", async () => {
     authMock.mockResolvedValue({ userId: "cust_1" })
     prismaMock.service.findUnique.mockResolvedValue({ id: "svc_1", artisanId: "artisan_1", price: 100 })

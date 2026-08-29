@@ -157,6 +157,15 @@ describe("PATCH /api/bookings (status transitions)", () => {
     expect(res.status).toBe(400)
   })
 
+  it("rejects a request with no status field", async () => {
+    authMock.mockResolvedValue({ userId: "artisan_user_1" })
+
+    const res = await PATCH(jsonRequest({ bookingId: "booking_1" }))
+
+    expect(res.status).toBe(400)
+    expect(prismaMock.artisanProfile.findUnique).not.toHaveBeenCalled()
+  })
+
   it("returns 403 when the caller has no artisan profile", async () => {
     authMock.mockResolvedValue({ userId: "not_an_artisan" })
     prismaMock.artisanProfile.findUnique.mockResolvedValue(null)

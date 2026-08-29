@@ -64,6 +64,36 @@ describe("GET /api/artisans", () => {
     )
   })
 
+  it("accepts an inverted price range and just returns whatever Prisma matches (no server-side validation)", async () => {
+    const res = await GET(searchRequest("?minPrice=500&maxPrice=10"))
+
+    expect(res.status).toBe(200)
+    expect(prismaMock.artisanProfile.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ pricePerHour: { gte: 500, lte: 10 } }),
+      })
+    )
+  })
+
+  it("treats a negative minRating as a valid (if unusual) numeric filter", async () => {
+    const res = await GET(searchRequest("?minRating=-1"))
+
+    expect(res.status).toBe(200)
+    expect(prismaMock.artisanProfile.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ rating: { gte: -1 } }) })
+    )
+  })
+
+  it("ignores an empty q/category/location and doesn't add spurious filters", async () => {
+    const res = await GET(searchRequest("?q=&category=&location="))
+
+    expect(res.status).toBe(200)
+    const call = prismaMock.artisanProfile.findMany.mock.calls[0][0]
+    expect(call.where.category).toBeUndefined()
+    expect(call.where.location).toBeUndefined()
+    expect(call.where.OR).toBeUndefined()
+  })
+
   it("returns 429 once the per-IP rate limit is exceeded", async () => {
     const ip = "198.51.100.42"
     for (let i = 0; i < 60; i++) {

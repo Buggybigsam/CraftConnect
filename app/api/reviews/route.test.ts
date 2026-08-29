@@ -59,6 +59,30 @@ describe("POST /api/reviews", () => {
     expect(res.status).toBe(400)
   })
 
+  it("rejects a non-integer rating like 4.5", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+
+    const res = await POST(jsonRequest({ bookingId: "booking_1", artisanUserId: "artisan_user_1", rating: 4.5 }))
+
+    expect(res.status).toBe(400)
+  })
+
+  it("rejects a rating sent as a string", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+
+    const res = await POST(jsonRequest({ bookingId: "booking_1", artisanUserId: "artisan_user_1", rating: "5" }))
+
+    expect(res.status).toBe(400)
+  })
+
+  it("rejects a missing rating", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+
+    const res = await POST(jsonRequest({ bookingId: "booking_1", artisanUserId: "artisan_user_1" }))
+
+    expect(res.status).toBe(400)
+  })
+
   it("returns 404 when no completed booking matches the customer", async () => {
     authMock.mockResolvedValue({ userId: "cust_1" })
     prismaMock.booking.findFirst.mockResolvedValue(null)

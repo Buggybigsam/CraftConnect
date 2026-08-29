@@ -25,11 +25,17 @@ export async function POST(request: Request) {
   const rateLimit = checkRateLimit(`bookings:${getClientIp(request)}`, BOOKINGS_RATE_LIMIT, BOOKINGS_RATE_WINDOW_MS)
   if (!rateLimit.ok) return rateLimitResponse(rateLimit)
 
-  const { artisanUserId, serviceId, date, notes } = await request.json()
+  const { serviceId, date, notes } = await request.json()
 
   try {
     const service = await prisma.service.findUnique({ where: { id: serviceId } })
     if (!service) return NextResponse.json({ error: "Service not found" }, { status: 404 })
+
+    // Zero out seconds/ms so the unique(artisanId, date) constraint actually
+    // catches two bookings for the same displayed slot instead of letting
+    // millisecond-apart timestamps both through.
+    const slotDate = new Date(date)
+    slotDate.setSeconds(0, 0)
 
     let booking
     try {
@@ -38,7 +44,7 @@ export async function POST(request: Request) {
           customerId: userId,
           artisanId: service.artisanId,
           serviceId,
-          date: new Date(date),
+          date: slotDate,
           notes,
           status: "PENDING",
         },
@@ -92,7 +98,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 

@@ -6,9 +6,7 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit
 const BOOKINGS_RATE_LIMIT = 10
 const BOOKINGS_RATE_WINDOW_MS = 60 * 1000
 
-// Prisma's generated error class carries a `code` field (e.g. "P2002" for a
-// unique-constraint violation). We check duck-typed shape rather than importing
-// the class so this stays decoupled from the generated client's exact path.
+// Duck-typed check for Prisma's P2002 unique-constraint error code.
 function isUniqueConstraintError(err: unknown): boolean {
   return (
     typeof err === "object" &&
@@ -31,9 +29,7 @@ export async function POST(request: Request) {
     const service = await prisma.service.findUnique({ where: { id: serviceId } })
     if (!service) return NextResponse.json({ error: "Service not found" }, { status: 404 })
 
-    // Zero out seconds/ms so the unique(artisanId, date) constraint actually
-    // catches two bookings for the same displayed slot instead of letting
-    // millisecond-apart timestamps both through.
+    // Zero seconds/ms so the unique(artisanId, date) constraint dedupes same-slot bookings.
     const slotDate = new Date(date)
     if (Number.isNaN(slotDate.getTime())) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 })
@@ -157,9 +153,7 @@ export async function PATCH(request: Request) {
   })
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 })
 
-  // Guard the PENDING -> {CONFIRMED,CANCELLED} transition atomically. Checking
-  // booking.status above and then updating separately left a window where two
-  // concurrent requests could both pass the check and both apply their update.
+  // updateMany's status guard makes this PENDING -> next-status transition atomic.
   const result = await prisma.booking.updateMany({
     where: { id: bookingId, artisanId: artisan.id, status: "PENDING" },
     data: { status },

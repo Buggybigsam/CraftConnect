@@ -21,10 +21,7 @@ export async function POST(request: Request) {
 
   const secret = process.env.PAYSTACK_SECRET_KEY
   if (!secret) {
-    // Fail closed: an empty/missing secret must never be usable as an HMAC
-    // key, or anyone could forge a valid signature for a misconfigured
-    // deployment. Refuse the request instead of silently comparing against
-    // a hash computed with "".
+    // Fail closed instead of hashing against an empty, forgeable key.
     console.error("PAYSTACK_SECRET_KEY is not set; rejecting webhook")
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 })
   }
@@ -61,9 +58,7 @@ export async function POST(request: Request) {
         select: { bookingId: true, status: true },
       })
 
-      // Reference not found (e.g. webhook arrived before our own booking-creation
-      // write committed) or already processed: acknowledge without erroring so
-      // Paystack doesn't retry forever, but don't reprocess a completed payment.
+      // Unknown or already-processed reference: acknowledge without reprocessing.
       if (!payment || payment.status === "SUCCESS") {
         return NextResponse.json({ received: true })
       }
@@ -79,10 +74,7 @@ export async function POST(request: Request) {
           data: { status: "CONFIRMED" },
         })
       } catch (err) {
-        // The booking backing this payment is gone (e.g. it was rolled back
-        // when Paystack initialization failed elsewhere). Acknowledge the
-        // webhook so Paystack stops retrying a delivery that can never
-        // succeed, instead of 500ing forever.
+        // Booking is gone: acknowledge so Paystack stops retrying a dead delivery.
         if (isRecordNotFoundError(err)) {
           console.error("Booking no longer exists for confirmed payment", payment.bookingId, err)
           return NextResponse.json({ received: true })

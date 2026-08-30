@@ -18,9 +18,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
   const role = (sessionClaims?.metadata as { role?: string })?.role
 
-  // Only redirect when the role is KNOWN to be wrong, never when it's undefined.
-  // An undefined role means the session token was issued before /auth/redirect ran
-  // (e.g. first sign-in). Letting the request through avoids an infinite redirect loop.
+  // Only redirect on a known-wrong role; an undefined role means /auth/redirect hasn't run yet.
   if (role && path.startsWith("/customer") && role !== "CUSTOMER") {
     return NextResponse.redirect(new URL(getDashboard(role), request.url))
   }

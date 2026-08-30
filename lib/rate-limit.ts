@@ -1,7 +1,4 @@
-// Simple in-memory sliding-window rate limiter, keyed by an identifier (typically
-// client IP). Good enough for a single-instance Next.js deployment on an academic
-// project; not shared across serverless instances, so treat it as a soft guard
-// rather than a strict global limit.
+// In-memory sliding-window rate limiter. Not shared across instances, so treat as a soft guard.
 
 type Bucket = {
   timestamps: number[]
@@ -9,8 +6,7 @@ type Bucket = {
 
 const buckets = new Map<string, Bucket>()
 
-// Periodically clear out buckets that haven't been touched recently so the map
-// doesn't grow unbounded over a long-running process.
+// Sweeps stale buckets so the map doesn't grow unbounded.
 const MAX_BUCKET_AGE_MS = 10 * 60 * 1000
 let lastSweep = Date.now()
 
@@ -31,10 +27,6 @@ export type RateLimitResult = {
   retryAfterMs: number
 }
 
-/**
- * Sliding-window rate limit check. Returns ok:false once `limit` requests have
- * been made by `key` within `windowMs`.
- */
 export function checkRateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now()
   sweep(now)

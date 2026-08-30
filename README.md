@@ -1,6 +1,6 @@
 # smartbooking
 
-A marketplace for finding and booking trusted local artisans in Ghana and Nigeria.
+A marketplace for finding and booking trusted local artisans in Ghana.
 
 ## Tech Stack
 
@@ -8,18 +8,22 @@ A marketplace for finding and booking trusted local artisans in Ghana and Nigeri
 - **Auth**: Clerk v7
 - **Database**: PostgreSQL on Neon via Prisma 7
 - **Payments**: Paystack
-- **Email**: Resend
+- **Email**: SendGrid
 - **UI**: Tailwind CSS + shadcn/ui + Lucide icons
 
 ## Features
 
 - Customer: browse artisans, book services, pay online, leave reviews
-- Artisan: apply → admin approval → manage bookings + earnings
+- Artisan: apply, get admin approval, manage bookings and earnings
 - Admin: approve/reject artisans, monitor platform stats
 
 ## Getting Started
 
-1. Copy `.env.local` template and fill in your keys
+1. Copy `.env.local.example` to `.env.local` and fill in your keys
 2. `npm install`
 3. `npx prisma migrate dev`
 4. `npm run dev`
+
+## Testing
+
+`npm test` runs the Vitest suite (API routes, rate limiting, email wiring).

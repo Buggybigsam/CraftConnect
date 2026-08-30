@@ -23,9 +23,7 @@ export async function POST(request: Request) {
   const existingReview = await prisma.review.findUnique({ where: { bookingId } })
   if (existingReview) return NextResponse.json({ error: "Booking already reviewed" }, { status: 409 })
 
-  // Create the review and recompute the artisan's average rating inside a single
-  // transaction so two concurrent submissions for the same artisan can't both read
-  // a stale review list and write a stale average.
+  // Transaction avoids two concurrent reviews both reading a stale average.
   const review = await prisma.$transaction(async (tx) => {
     const createdReview = await tx.review.create({
       data: {

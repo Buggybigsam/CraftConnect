@@ -1,4 +1,4 @@
-# Smart Booking System — Design Document
+# Smart Booking System: Design Document
 **Date:** 2026-06-14  
 **Status:** Approved
 
@@ -13,7 +13,7 @@ A digital marketplace connecting customers with local artisans (electricians, pl
 
 | Layer | Tool | Notes |
 |---|---|---|
-| Framework | Next.js 14 (App Router) | MPA — no SPA client-side routing |
+| Framework | Next.js 14 (App Router) | MPA: no SPA client-side routing |
 | Auth | Clerk | Roles via `publicMetadata` |
 | Payments | Paystack | GHS / NGN, sandbox mode |
 | Database | PostgreSQL + Prisma ORM | Hosted on Neon (free tier) |
@@ -63,21 +63,21 @@ Landing page → "Join as Artisan" → Clerk signup → Artisan application form
 ### Public (no login)
 | Route | Page |
 |---|---|
-| `/` | Landing page — hero, category grid, how it works, featured artisans, CTA |
+| `/` | Landing page: hero, category grid, how it works, featured artisans, CTA |
 
 ### Customer (role=customer)
 | Route | Page |
 |---|---|
-| `/customer/browse` | Home after login — artisan grid + search/filters |
-| `/customer/artisan/[id]` | Artisan profile — bio, services, availability, reviews, Book Now |
-| `/customer/booking` | Book a service — pick date/time |
+| `/customer/browse` | Home after login: artisan grid + search/filters |
+| `/customer/artisan/[id]` | Artisan profile: bio, services, availability, reviews, Book Now |
+| `/customer/booking` | Book a service: pick date/time |
 | `/customer/payment` | Paystack checkout |
 | `/customer/dashboard` | My bookings, history, pending payments, reviews left |
 
 ### Artisan (role=artisan)
 | Route | Page |
 |---|---|
-| `/artisan/dashboard` | Incoming bookings — accept/reject |
+| `/artisan/dashboard` | Incoming bookings: accept/reject |
 | `/artisan/profile` | Edit services, pricing, availability |
 | `/artisan/earnings` | Payment history |
 

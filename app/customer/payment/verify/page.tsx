@@ -26,10 +26,7 @@ export default async function PaymentVerifyPage({ searchParams }: { searchParams
 
   if (!bookingId || !ref) redirect("/customer/dashboard")
 
-  // Both bookingId and reference come from the redirect query string, which is
-  // attacker-controllable. Without this check, a signed-in user could confirm an
-  // arbitrary booking (their own or someone else's) as paid by pairing any of
-  // their own genuinely-successful references with a different bookingId.
+  // bookingId/reference are query-string params; verify they're actually paired.
   const payment = await prisma.payment.findUnique({ where: { reference: ref } })
   if (!payment || payment.bookingId !== bookingId) {
     redirect("/customer/dashboard?failed=1")

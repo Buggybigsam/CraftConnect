@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { resend, FROM_EMAIL } from "@/lib/resend"
+import { email, FROM_EMAIL } from "@/lib/email"
 
 export async function PATCH(request: Request) {
   const { userId } = await auth()
@@ -38,7 +38,7 @@ export async function PATCH(request: Request) {
       ? `<p>Hi ${artisanName}, your SmartBooking artisan profile has been <strong>approved</strong>! You can now log in and start receiving bookings.</p>`
       : `<p>Hi ${artisanName}, unfortunately your SmartBooking artisan application was <strong>not approved</strong> at this time. Please contact support for more information.</p>`
 
-  await resend.emails.send({
+  await email.send({
     from: FROM_EMAIL,
     to: artisanEmail,
     subject: status === "APPROVED" ? "Your Profile is Approved - SmartBooking" : "Application Update - SmartBooking",

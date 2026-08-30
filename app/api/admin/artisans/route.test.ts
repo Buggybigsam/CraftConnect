@@ -7,7 +7,7 @@ const prismaMock = vi.hoisted(() => ({
   artisanProfile: { update: vi.fn() },
 }))
 
-const resendSendMock = vi.hoisted(() => vi.fn())
+const emailSendMock = vi.hoisted(() => vi.fn())
 
 vi.mock("@clerk/nextjs/server", () => ({
   auth: () => authMock(),
@@ -17,8 +17,8 @@ vi.mock("@/lib/prisma", () => ({
   prisma: prismaMock,
 }))
 
-vi.mock("@/lib/resend", () => ({
-  resend: { emails: { send: resendSendMock } },
+vi.mock("@/lib/email", () => ({
+  email: { send: emailSendMock },
   FROM_EMAIL: "noreply@smartbooking.test",
 }))
 
@@ -34,7 +34,7 @@ function jsonRequest(body: unknown) {
 describe("PATCH /api/admin/artisans", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    resendSendMock.mockResolvedValue({})
+    emailSendMock.mockResolvedValue({})
   })
 
   it("returns 401 when the caller is not authenticated", async () => {
@@ -100,7 +100,7 @@ describe("PATCH /api/admin/artisans", () => {
       data: { status: "APPROVED" },
       include: { user: { select: { email: true, name: true } } },
     })
-    expect(resendSendMock).toHaveBeenCalledWith(
+    expect(emailSendMock).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "artisan@example.com",
         subject: expect.stringMatching(/approved/i),
@@ -120,7 +120,7 @@ describe("PATCH /api/admin/artisans", () => {
 
     const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "REJECTED" }))
 
-    expect(resendSendMock).toHaveBeenCalledWith(
+    expect(emailSendMock).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "artisan@example.com",
         subject: expect.stringMatching(/application update/i),
@@ -137,7 +137,7 @@ describe("PATCH /api/admin/artisans", () => {
       status: "APPROVED",
       user: { email: "artisan@example.com", name: "Kofi" },
     })
-    resendSendMock.mockRejectedValue(new Error("Resend is down"))
+    emailSendMock.mockRejectedValue(new Error("SendGrid is down"))
 
     const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }))
 
@@ -153,7 +153,7 @@ describe("PATCH /api/admin/artisans", () => {
     const res = await PATCH(jsonRequest({ artisanProfileId: "missing", status: "APPROVED" }))
 
     expect(res.status).toBe(404)
-    expect(resendSendMock).not.toHaveBeenCalled()
+    expect(emailSendMock).not.toHaveBeenCalled()
   })
 
   it("propagates a non-P2025 database error instead of swallowing it", async () => {

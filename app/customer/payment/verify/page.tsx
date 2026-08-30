@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import { resend, FROM_EMAIL } from "@/lib/resend"
+import { email, FROM_EMAIL } from "@/lib/email"
 
 interface SearchParams {
   bookingId?: string
@@ -67,13 +67,13 @@ export default async function PaymentVerifyPage({ searchParams }: { searchParams
 
     if (booking) {
       await Promise.allSettled([
-        resend.emails.send({
+        email.send({
           from: FROM_EMAIL,
           to: booking.customer.email,
           subject: "Booking Confirmed - SmartBooking",
           html: `<p>Hi ${booking.customer.name}, your booking for <strong>${booking.service.title}</strong> with ${booking.artisan.user.name} on ${new Date(booking.date).toLocaleDateString()} has been confirmed. Payment of GHS ${booking.service.price} received.</p>`,
         }),
-        resend.emails.send({
+        email.send({
           from: FROM_EMAIL,
           to: booking.artisan.user.email,
           subject: "New Booking - SmartBooking",

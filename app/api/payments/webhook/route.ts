@@ -19,13 +19,18 @@ export async function POST(request: Request) {
   const rateLimit = checkRateLimit(`webhook:${getClientIp(request)}`, WEBHOOK_RATE_LIMIT, WEBHOOK_RATE_WINDOW_MS)
   if (!rateLimit.ok) return rateLimitResponse(rateLimit)
 
+  const secret = process.env.PAYSTACK_SECRET_KEY
+  if (!secret) {
+    // Fail closed: an empty/missing secret must never be usable as an HMAC
+    // key, or anyone could forge a valid signature for a misconfigured
+    // deployment. Refuse the request instead of silently comparing against
+    // a hash computed with "".
+    console.error("PAYSTACK_SECRET_KEY is not set; rejecting webhook")
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 })
+  }
+
   const body = await request.text()
   const signature = request.headers.get("x-paystack-signature") ?? ""
-  // TODO: PAYSTACK_SECRET_KEY defaulting to "" here means a misconfigured
-  // deployment (env var unset) accepts a forged signature computed with an
-  // empty key instead of failing closed. Assert this is configured at
-  // startup, or reject the request outright when it's missing.
-  const secret = process.env.PAYSTACK_SECRET_KEY ?? ""
 
   const hash = crypto.createHmac("sha512", secret).update(body).digest("hex")
   const hashBuf = Buffer.from(hash, "hex")

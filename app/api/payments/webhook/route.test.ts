@@ -41,6 +41,17 @@ describe("POST /api/payments/webhook", () => {
     process.env.PAYSTACK_SECRET_KEY = originalSecret
   })
 
+  it("fails closed with 500 when PAYSTACK_SECRET_KEY is not configured, even with a matching empty-key signature", async () => {
+    delete process.env.PAYSTACK_SECRET_KEY
+    const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
+    const forgedSignature = crypto.createHmac("sha512", "").update(body).digest("hex")
+
+    const res = await POST(webhookRequest(body, { signature: forgedSignature }))
+
+    expect(res.status).toBe(500)
+    expect(prismaMock.payment.findUnique).not.toHaveBeenCalled()
+  })
+
   it("rejects a request with a missing signature", async () => {
     const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
     const res = await POST(

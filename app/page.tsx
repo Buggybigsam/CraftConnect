@@ -294,6 +294,9 @@ export default async function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
             <Link href="/customer/browse" className="hover:text-white transition">Browse Artisans</Link>
             <Link href="/artisan-apply" className="hover:text-white transition">Join as Artisan</Link>
+            <Link href="/about" className="hover:text-white transition">About Us</Link>
+            <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
             <a href="mailto:support@smartbooking.com" className="hover:text-white transition">Contact Support</a>
           </div>
 

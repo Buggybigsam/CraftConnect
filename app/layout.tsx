@@ -12,6 +12,27 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "SmartBooking - Find Local Artisans",
   description: "Connect with trusted local artisans for all your home and business needs.",
+  openGraph: {
+    title: "SmartBooking - Find Local Artisans",
+    description: "Connect with trusted local artisans for all your home and business needs.",
+    type: "website",
+    // NOTE: Supply a real 1200x630 OpenGraph preview image at public/og-image.png
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "SmartBooking - Find Local Artisans",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SmartBooking - Find Local Artisans",
+    description: "Connect with trusted local artisans for all your home and business needs.",
+    // NOTE: Supply a real 1200x630 Twitter preview image at public/og-image.png
+    images: ["/og-image.png"],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

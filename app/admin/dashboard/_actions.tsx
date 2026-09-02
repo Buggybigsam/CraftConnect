@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface Props {
   artisanProfileId: string
@@ -26,11 +27,14 @@ export default function AdminArtisanActions({ artisanProfileId, artisanEmail, ar
 
     if (!res.ok) {
       const data = await res.json().catch(() => null)
-      setError(data?.error ?? "Failed to update artisan")
+      const errorMsg = data?.error ?? "Failed to update artisan"
+      setError(errorMsg)
+      toast.error(errorMsg)
       setLoading(false)
       return
     }
 
+    toast.success(`Artisan ${status === "APPROVED" ? "approved" : "rejected"} successfully`)
     router.refresh()
     setLoading(false)
   }

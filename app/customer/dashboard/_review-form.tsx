@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Star } from "lucide-react"
 
 interface Props {
@@ -30,11 +31,14 @@ export default function ReviewForm({ bookingId, artisanUserId }: Props) {
 
     const data = await res.json()
     if (!res.ok) {
-      setError(data.error ?? "Failed to submit review")
+      const errorMsg = data.error ?? "Failed to submit review"
+      setError(errorMsg)
+      toast.error(errorMsg)
       setLoading(false)
       return
     }
 
+    toast.success("Review submitted! Thank you.")
     router.refresh()
     setLoading(false)
   }

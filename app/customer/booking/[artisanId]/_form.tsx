@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 
 interface Service {
   id: string
@@ -39,11 +40,14 @@ export default function BookingForm({ artisanUserId, services }: Props) {
 
     const data = await res.json()
     if (!res.ok) {
-      setError(data.error ?? "Failed to create booking")
+      const errorMsg = data.error ?? "Failed to create booking"
+      setError(errorMsg)
+      toast.error(errorMsg)
       setLoading(false)
       return
     }
 
+    toast.success("Booking created! Redirecting to payment...")
     // Redirect to Paystack payment
     window.location.href = data.paymentUrl
   }

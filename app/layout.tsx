@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ClerkProvider } from "@clerk/nextjs"
+import { Toaster } from "sonner"
 import "./globals.css"
 
 const inter = Inter({
@@ -10,6 +11,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://smartbooking.local"),
   title: "SmartBooking - Find Local Artisans",
   description: "Connect with trusted local artisans for all your home and business needs.",
   openGraph: {
@@ -39,7 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" className={`${inter.variable} h-full antialiased`}>
-        <body className="min-h-full flex flex-col bg-white text-slate-900">{children}</body>
+        <body className="min-h-full flex flex-col bg-white text-slate-900">
+          {children}
+          <Toaster position="top-right" richColors />
+        </body>
       </html>
     </ClerkProvider>
   )

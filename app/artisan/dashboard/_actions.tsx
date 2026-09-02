@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function ArtisanBookingActions({ bookingId }: { bookingId: string }) {
   const [loading, setLoading] = useState(false)
@@ -9,11 +10,17 @@ export default function ArtisanBookingActions({ bookingId }: { bookingId: string
 
   async function updateStatus(status: "CONFIRMED" | "CANCELLED") {
     setLoading(true)
-    await fetch("/api/bookings", {
+    const res = await fetch("/api/bookings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bookingId, status }),
     })
+
+    if (!res.ok) {
+      toast.error("Failed to update booking status")
+    } else {
+      toast.success(status === "CONFIRMED" ? "Booking accepted!" : "Booking declined")
+    }
     router.refresh()
     setLoading(false)
   }

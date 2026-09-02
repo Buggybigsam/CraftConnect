@@ -46,6 +46,7 @@ model User {
   artisanProfile     ArtisanProfile?
   bookingsAsCustomer Booking[]       @relation("CustomerBookings")
   reviews            Review[]
+  savedArtisans      SavedArtisan[]  @relation("CustomerSavedArtisans")
 }
 
 model ArtisanProfile {
@@ -58,14 +59,16 @@ model ArtisanProfile {
   location     String
   yearsExp     Int           @default(0)
   status       ArtisanStatus @default(PENDING)
+  isAvailable  Boolean       @default(true)
   rating       Float         @default(0)
   totalReviews Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   services Service[]
-  bookings Booking[] @relation("ArtisanBookings")
+  bookings Booking[]      @relation("ArtisanBookings")
   reviews  Review[]
+  savedBy  SavedArtisan[]
 
   @@index([status])
   @@index([category])
@@ -131,4 +134,17 @@ model Review {
   rating     Int
   comment    String
   createdAt  DateTime       @default(now())
+}
+
+model SavedArtisan {
+  id         String         @id @default(cuid())
+  customerId String
+  customer   User           @relation("CustomerSavedArtisans", fields: [customerId], references: [id], onDelete: Cascade)
+  artisanId  String
+  artisan    ArtisanProfile @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+
+  @@unique([customerId, artisanId])
+  @@index([customerId])
+  @@index([artisanId])
 }

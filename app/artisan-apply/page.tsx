@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import Image from "next/image"
+import { toast } from "sonner"
 import {
   Zap, Wrench, Sparkles, Hammer, Paintbrush, Car, BookOpen, Building2,
   ArrowLeft, CheckCircle, Loader2, ChevronDown,
@@ -60,11 +61,14 @@ export default function ArtisanApplyPage() {
 
     if (!res.ok) {
       const data = await res.json()
-      setError(data.error ?? "Something went wrong")
+      const errorMsg = data.error ?? "Something went wrong"
+      setError(errorMsg)
+      toast.error(errorMsg)
       setLoading(false)
       return
     }
 
+    toast.success("Application submitted successfully!")
     router.push("/artisan/dashboard")
   }
 

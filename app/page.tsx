@@ -1,306 +1,332 @@
 import Link from "next/link"
+import Image from "next/image"
 import {
-  Zap, Wrench, Sparkles, Hammer, Paintbrush, Car, BookOpen, Building2,
-  Search, CalendarCheck, CreditCard, Star, MapPin, ArrowRight, PlusCircle, Flame,
-  Shield, Clock, BadgeCheck, User, ChevronDown,
+  Search, Star, MapPin, ShieldCheck, Check,
+  ChevronRight, LayoutDashboard,
 } from "lucide-react"
+import { auth } from "@clerk/nextjs/server"
+import { UserButton } from "@clerk/nextjs"
 import { prisma } from "@/lib/prisma"
+import { ARTISAN_CATEGORY_PHOTOS, getArtisanPhoto } from "@/lib/artisan-categories"
+import SiteBanner from "@/components/site-banner"
+import BrandIcon from "@/components/brand-icon"
 
 const CATEGORIES = [
-  { name: "Electrician",  Icon: Zap,        bg: "bg-amber-50",  fg: "text-amber-600"  },
-  { name: "Plumber",      Icon: Wrench,     bg: "bg-sky-50",    fg: "text-sky-600"    },
-  { name: "Cleaner",      Icon: Sparkles,   bg: "bg-teal-50",   fg: "text-teal-600"   },
-  { name: "Carpenter",    Icon: Hammer,     bg: "bg-orange-50", fg: "text-orange-600" },
-  { name: "Painter",      Icon: Paintbrush, bg: "bg-rose-50",   fg: "text-rose-600"   },
-  { name: "Mechanic",     Icon: Car,        bg: "bg-slate-50",  fg: "text-slate-600"  },
-  { name: "Tutor",        Icon: BookOpen,   bg: "bg-violet-50", fg: "text-violet-600" },
-  { name: "Mason",        Icon: Building2,  bg: "bg-stone-50",  fg: "text-stone-600"  },
-]
+  { name: "Plumber", desc: "Leaks, pipes, installations" },
+  { name: "Electrician", desc: "Wiring, repairs, fittings" },
+  { name: "Carpenter", desc: "Woodwork, doors, cabinets" },
+  { name: "Painter", desc: "Interior and exterior painting" },
+  { name: "AC Technician", desc: "Install, repair, maintain" },
+  { name: "Appliance Repair", desc: "Fridges, washers, ovens" },
+  { name: "Tailor", desc: "Fitting, alterations, custom work" },
+  { name: "Mechanic", desc: "Vehicle diagnostics and repair" },
+] as const
 
 const STEPS = [
-  { Icon: Search,       step: "01", title: "Search",        desc: "Browse verified artisans by category, location, or price in your area." },
-  { Icon: CalendarCheck,step: "02", title: "Book",          desc: "Pick your preferred date and time and confirm your booking instantly."   },
-  { Icon: CreditCard,   step: "03", title: "Pay & Review",  desc: "Pay securely via Paystack and leave a rating once the job is done."      },
-]
-
-const TRUST = [
-  { Icon: BadgeCheck, label: "Verified Artisans",   desc: "Every artisan is manually approved by our team." },
-  { Icon: Shield,     label: "Secure Payments",     desc: "End-to-end encrypted via Paystack."              },
-  { Icon: Clock,      label: "Book in Minutes",     desc: "No calls. No waiting. Instant confirmation."     },
+  { step: "01", title: "Choose a service", desc: "Search by trade or tell us what you need." },
+  { step: "02", title: "Pick an artisan", desc: "Compare verified profiles, ratings, and rates." },
+  { step: "03", title: "Book and pay", desc: "Choose a slot and pay securely with Paystack." },
+  { step: "04", title: "Get the job done", desc: "The artisan shows up. You review when it’s complete." },
 ]
 
 async function getFeaturedArtisans() {
   return prisma.artisanProfile.findMany({
-    where:   { status: "APPROVED" },
+    where: { status: "APPROVED" },
     include: { user: true },
     orderBy: { rating: "desc" },
-    take:    8,
+    take: 4,
   })
 }
 
 export default async function LandingPage() {
-  const featured = await getFeaturedArtisans().catch(() => [])
+  const { userId } = await auth()
+  const [featured, loggedInUser] = await Promise.all([
+    getFeaturedArtisans().catch(() => []),
+    userId
+      ? prisma.user.findUnique({ where: { id: userId }, select: { role: true, name: true } }).catch(() => null)
+      : Promise.resolve(null),
+  ])
+
+  const userRole = loggedInUser?.role
+  const dashboardHref =
+    userRole === "ADMIN"
+      ? "/admin/dashboard"
+      : userRole === "ARTISAN"
+      ? "/artisan/dashboard"
+      : "/customer/dashboard"
+  const dashboardLabel =
+    userRole === "ADMIN"
+      ? "Admin Panel"
+      : userRole === "ARTISAN"
+      ? "Artisan Dashboard"
+      : "Customer Portal"
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans">
-
-      {/* ── Navbar ──────────────────────────────────────────── */}
+    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-800">
+      <SiteBanner />
       <nav className="bg-emerald-600 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 font-extrabold text-lg text-white">
-            <span className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
-              <Zap size={14} className="text-emerald-600" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7" priority />
+            CraftConnect
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/artisan-apply" className="hidden sm:block text-sm text-white/90 hover:text-white transition">
-              For Artisans
-            </Link>
-            <Link href="/sign-in" className="text-sm text-white/90 hover:text-white transition">
-              Sign in
-            </Link>
-            <span className="hidden sm:block text-white/30">|</span>
-            <Link
-              href="/sign-up"
-              className="bg-orange-500 text-white text-sm px-4 py-1.5 rounded-md hover:bg-orange-600 transition font-bold"
-            >
-              Get Started
-            </Link>
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-white/90">
+            <Link href="/customer/browse" className="hover:text-white transition">Browse</Link>
+            <Link href="#how-it-works" className="hover:text-white transition">How it works</Link>
+            <Link href="/about" className="hover:text-white transition">About</Link>
+            <Link href="/artisan-apply" className="hover:text-white transition">For artisans</Link>
+          </div>
+          <div className="flex items-center gap-3">
+            {userId ? (
+              <>
+                <Link
+                  href={dashboardHref}
+                  className="bg-white text-emerald-700 text-sm px-4 py-2 rounded-xl hover:bg-emerald-50 transition font-semibold flex items-center gap-1.5 shadow-sm"
+                >
+                  <LayoutDashboard size={15} />
+                  {dashboardLabel}
+                </Link>
+                <div className="ml-1 flex items-center">
+                  <UserButton />
+                </div>
+              </>
+            ) : (
+              <>
+                <Link href="/sign-in" className="text-sm font-semibold text-white/90 hover:text-white transition">
+                  Log in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="bg-white text-emerald-700 text-sm px-4 py-2 rounded-xl hover:bg-emerald-50 transition font-semibold"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* ── Hero / search band ──────────────────────────────── */}
-      <section className="bg-gradient-to-b from-emerald-600 to-emerald-500 pb-10 pt-10 sm:pt-14">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-white text-2xl sm:text-3xl font-bold mb-6">
-            What service are you looking for?
+      <section className="relative overflow-hidden min-h-[580px] flex items-center pt-14 pb-20 px-4">
+        <Image
+          src="/images/hero-artisans.jpg"
+          alt="Artisans and tradespeople at Accra Community Skills Hub"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/60 via-emerald-950/65 to-emerald-950/80" />
+        <div className="relative z-10 max-w-3xl mx-auto text-center">
+          <p className="inline-block text-xs font-bold tracking-wider uppercase bg-emerald-700/50 px-3 py-1 rounded-full mb-4 text-emerald-100">
+            Trusted local trades in Ghana
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white leading-tight mb-4">
+            Find a verified artisan. Book in minutes.
           </h1>
-          <form action="/customer/browse" className="bg-white rounded-xl p-2 flex flex-col sm:flex-row gap-2 shadow-lg">
-            <div className="relative sm:w-52 shrink-0">
-              <select
-                name="category"
-                defaultValue=""
-                className="w-full h-full appearance-none border-0 sm:border-r border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-700 bg-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="">All Categories</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c.name} value={c.name}>{c.name}</option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
-            <input
-              type="text"
-              name="q"
-              placeholder="I am looking for..."
-              className="flex-1 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
-            />
+          <p className="text-emerald-100 text-base sm:text-lg mb-8 max-w-2xl mx-auto">
+            Plumbing, electrical, carpentry, painting, and more, with secure Paystack payments and real customer reviews.
+          </p>
+
+          <form action="/customer/browse" method="get" className="bg-white rounded-2xl shadow-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 text-left">
+            <label className="flex-1">
+              <span className="block text-xs font-semibold text-slate-600 mb-1 px-1">Service</span>
+              <span className="relative block">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  name="q"
+                  type="search"
+                  placeholder="Plumber, electrician…"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                />
+              </span>
+            </label>
+            <label className="flex-1">
+              <span className="block text-xs font-semibold text-slate-600 mb-1 px-1">Location</span>
+              <span className="relative block">
+                <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  name="location"
+                  type="text"
+                  placeholder="Accra, Kumasi…"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                />
+              </span>
+            </label>
             <button
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-lg text-sm flex items-center justify-center gap-2 transition"
+              className="sm:self-end h-[46px] px-6 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition"
             >
-              <Search size={16} /> Search
+              Search
             </button>
           </form>
-          <p className="text-emerald-100 text-xs mt-4">
-            Trusted by 500+ verified artisans across 12+ cities in Ghana
-          </p>
-        </div>
-      </section>
 
-      {/* ── Quick-action / category icon grid ───────────────── */}
-      <section className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-3">
-            <Link href="/artisan-apply" className="flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition">
-              <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
-                <PlusCircle size={20} className="text-orange-500" />
-              </div>
-              <span className="text-xs font-medium text-slate-700 text-center leading-tight">Join as<br />Artisan</span>
-            </Link>
-            <Link href="/customer/browse" className="flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition">
-              <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center">
-                <Flame size={20} className="text-rose-500" />
-              </div>
-              <span className="text-xs font-medium text-slate-700 text-center leading-tight">Trending</span>
-            </Link>
-            {CATEGORIES.map(({ name, Icon, bg, fg }) => (
-              <Link
-                key={name}
-                href={`/customer/browse?category=${encodeURIComponent(name)}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition"
-              >
-                <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center`}>
-                  <Icon size={20} className={fg} />
-                </div>
-                <span className="text-xs font-medium text-slate-700 text-center leading-tight">{name}</span>
-              </Link>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-emerald-50 font-medium mt-6">
+            <span className="flex items-center gap-1.5"><Check size={16} /> Verified artisans</span>
+            <span className="flex items-center gap-1.5"><Check size={16} /> Secure booking</span>
+            <span className="flex items-center gap-1.5"><Check size={16} /> Local professionals</span>
           </div>
         </div>
       </section>
 
-      {/* ── Sidebar + Trending listings ──────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-8 w-full grid lg:grid-cols-[220px_1fr] gap-6">
+      <section id="services" className="py-16 px-4 max-w-7xl mx-auto w-full">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">What can we help you with?</h2>
+            <p className="text-slate-500 text-sm">Browse trades that match how artisans list on CraftConnect.</p>
+          </div>
+          <Link href="/customer/browse" className="hidden sm:flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700">
+            View all <ChevronRight size={16} />
+          </Link>
+        </div>
 
-        {/* Category sidebar */}
-        <aside className="hidden lg:block">
-          <div className="bg-white rounded-xl border border-slate-100 overflow-hidden sticky top-20">
-            {CATEGORIES.map(({ name, Icon, fg }) => (
-              <Link
-                key={name}
-                href={`/customer/browse?category=${encodeURIComponent(name)}`}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 border-b border-slate-50 last:border-0 transition"
-              >
-                <Icon size={15} className={fg} />
-                {name}
-              </Link>
-            ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {CATEGORIES.map((cat) => (
             <Link
-              href="/customer/browse"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition"
+              key={cat.name}
+              href={`/customer/browse?category=${encodeURIComponent(cat.name)}`}
+              className="group bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition"
             >
-              View all artisans <ArrowRight size={13} />
+              <div className="relative h-32 bg-slate-100">
+                <Image
+                  src={ARTISAN_CATEGORY_PHOTOS[cat.name]}
+                  alt={cat.name}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover group-hover:scale-105 transition duration-500"
+                />
+              </div>
+              <div className="p-3">
+                <h3 className="font-semibold text-slate-900 text-sm group-hover:text-emerald-600">{cat.name}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{cat.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section id="how-it-works" className="py-16 px-4 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">How it works</h2>
+          <p className="text-slate-500 text-sm mb-10">Four steps from search to a finished job.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {STEPS.map((step) => (
+              <div key={step.step} className="rounded-2xl border border-slate-100 p-5">
+                <div className="text-emerald-600 font-bold text-sm mb-3">{step.step}</div>
+                <h3 className="font-semibold text-slate-900 mb-1">{step.title}</h3>
+                <p className="text-sm text-slate-500">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4">
+        <div className="max-w-7xl mx-auto bg-slate-900 rounded-3xl p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-lg">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Are you a skilled artisan?</h2>
+            <p className="text-slate-300 mb-6">
+              Apply once, get reviewed by our team, then start receiving bookings and Paystack payouts.
+            </p>
+            <ul className="space-y-2 mb-8 text-sm text-slate-300">
+              <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Verified customer jobs</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> You set your rates</li>
+              <li className="flex items-center gap-2"><Check size={16} className="text-emerald-400" /> Secure payments</li>
+            </ul>
+            <Link
+              href="/artisan-apply"
+              className="inline-flex bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold px-6 py-3 rounded-xl transition"
+            >
+              Become an artisan
             </Link>
           </div>
-        </aside>
+        </div>
+      </section>
 
-        {/* Trending grid */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Flame size={18} className="text-rose-500" /> Trending Artisans
-            </h2>
-            <Link href="/customer/browse" className="text-sm text-emerald-700 font-medium hover:underline flex items-center gap-1">
-              View all <ArrowRight size={14} />
-            </Link>
-          </div>
+      <section className="py-16 px-4 max-w-7xl mx-auto w-full">
+        <div className="flex items-end justify-between mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Top rated artisans</h2>
+          <Link href="/customer/browse" className="hidden sm:flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700">
+            View all <ChevronRight size={16} />
+          </Link>
+        </div>
 
-          {featured.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-100 p-10 text-center text-slate-400 text-sm">
-              No artisans available yet.
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-              {featured.map((a) => (
-                <div key={a.id} className="bg-white rounded-xl border border-slate-100 hover:shadow-md transition-all overflow-hidden">
-                  <div className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      {a.user.imageUrl ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {featured.length > 0 ? featured.map((a) => {
+            const artisanPhoto = getArtisanPhoto(a.user.name, a.category)
+
+            return (
+              <div key={a.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                <div className="p-5 flex-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                      {artisanPhoto ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={a.user.imageUrl} className="w-11 h-11 rounded-full object-cover" alt={a.user.name} />
+                        <img src={artisanPhoto} className="w-full h-full object-cover" alt={`${a.category} artisan ${a.user.name}`} />
                       ) : (
-                        <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center">
-                          <User size={20} className="text-emerald-400" />
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                          {a.user.name.slice(0, 1)}
                         </div>
                       )}
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-900 text-sm truncate">{a.user.name}</div>
-                        <div className="text-xs text-emerald-700 font-medium">{a.category}</div>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-sm mb-1.5">
-                      <Star size={12} className="text-amber-400 fill-amber-400" />
-                      <span className="font-semibold text-slate-900">{a.rating.toFixed(1)}</span>
-                      <span className="text-slate-400 text-xs">({a.totalReviews})</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-slate-400 mb-3">
-                      <MapPin size={11} />
-                      {a.location}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2 py-0.5 rounded">
-                        <BadgeCheck size={11} /> Verified
-                      </span>
-                      <span className="text-sm font-bold text-slate-900">GHS {a.pricePerHour}<span className="font-normal text-slate-400 text-xs">/hr</span></span>
+                    <div>
+                      <h3 className="font-semibold text-slate-900">{a.user.name}</h3>
+                      <p className="text-sm text-emerald-600">{a.category}</p>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 text-sm mb-3">
+                    <span className="flex items-center gap-1 font-semibold text-slate-700">
+                      <Star size={14} className="text-amber-400 fill-amber-400" />
+                      {a.rating.toFixed(1)}
+                      <span className="text-slate-400 font-normal">({a.totalReviews})</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-emerald-700 text-xs bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <ShieldCheck size={12} /> Verified
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-500 flex items-center gap-1.5 mb-4">
+                    <MapPin size={14} /> {a.location}
+                  </p>
+                  <p className="font-semibold text-slate-900">From GHS {a.pricePerHour}/hr</p>
                 </div>
-              ))}
+                <div className="p-5 pt-0 flex gap-2">
+                  <Link
+                    href={`/customer/artisan/${a.userId}`}
+                    className="flex-1 text-center py-2 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    href={`/customer/booking/${a.userId}`}
+                    className="flex-1 text-center py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700"
+                  >
+                    Book
+                  </Link>
+                </div>
+              </div>
+            )
+          }) : (
+            <div className="col-span-full py-12 text-center text-slate-400 text-sm bg-white rounded-2xl border border-slate-100">
+              No approved artisans yet. Check back soon, or apply to join.
             </div>
           )}
         </div>
       </section>
 
-      {/* ── Trust signals ───────────────────────────────────── */}
-      <section className="py-14 px-4 bg-white border-y">
-        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-8">
-          {TRUST.map(({ Icon, label, desc }) => (
-            <div key={label} className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                <Icon size={18} className="text-emerald-600" />
-              </div>
-              <div>
-                <div className="font-semibold text-slate-900 text-sm">{label}</div>
-                <div className="text-slate-500 text-sm mt-0.5">{desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ────────────────────────────────────── */}
-      <section className="py-16 px-4 bg-slate-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-slate-900">How It Works</h2>
-            <p className="text-slate-500 text-sm mt-2">Three steps to getting the job done.</p>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-8">
-            {STEPS.map(({ Icon, step, title, desc }) => (
-              <div key={step} className="relative">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-                    <Icon size={18} className="text-white" />
-                  </div>
-                  <span className="text-xs font-bold text-emerald-400 tracking-widest">{step}</span>
-                </div>
-                <h3 className="font-semibold text-slate-900 mb-1">{title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA Banner ──────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-emerald-600">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-white mb-3">Ready to get the job done?</h2>
-          <p className="text-emerald-100 mb-7 text-sm leading-relaxed">
-            Create a free account and find a trusted artisan near you in minutes.
-          </p>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center gap-2 bg-orange-500 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-orange-600 transition"
-          >
-            Create a Free Account <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      {/* ── Footer ──────────────────────────────────────────── */}
-      <footer className="border-t bg-slate-950 text-slate-400 px-4 py-8">
+      <footer className="border-t bg-slate-950 text-slate-400 px-4 py-8 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <Link href="/" className="flex items-center gap-2 font-bold text-white">
-            <span className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-              <Zap size={13} className="text-white" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7 ring-1 ring-emerald-900/60" />
+            CraftConnect
           </Link>
-
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
-            <Link href="/customer/browse" className="hover:text-white transition">Browse Artisans</Link>
-            <Link href="/artisan-apply" className="hover:text-white transition">Join as Artisan</Link>
-            <Link href="/about" className="hover:text-white transition">About Us</Link>
-            <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
-            <a href="mailto:support@smartbooking.com" className="hover:text-white transition">Contact Support</a>
+            <Link href="/customer/browse" className="hover:text-white transition">Browse artisans</Link>
+            <Link href="/artisan-apply" className="hover:text-white transition">Join as artisan</Link>
+            <Link href="/about" className="hover:text-white transition">About</Link>
+            <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition">Terms</Link>
           </div>
-
-          <p className="text-xs text-slate-600">© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} CraftConnect. All rights reserved.</p>
         </div>
       </footer>
     </div>

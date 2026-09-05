@@ -1,4 +1,4 @@
-import sgMail from "@sendgrid/mail"
+﻿import sgMail from "@sendgrid/mail"
 
 let configured = false
 
@@ -14,4 +14,4 @@ export const email = {
   send: (...args: Parameters<typeof sgMail.send>) => getClient().send(...args),
 }
 
-export const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL ?? "noreply@smartbooking.com"
+export const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL ?? "noreply@CraftConnect.com"

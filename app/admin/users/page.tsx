@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { Users } from "lucide-react"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { AdminPagination } from "@/components/ui/admin-pagination"
+import { ADMIN_PAGE_SIZE, parsePage, buildSearchQuery } from "@/lib/admin-query"
+import type { Prisma, Role, UserStatus } from "@/lib/generated/prisma/client"
+import AdminUserActions from "./_actions"
 
 const ROLE_STYLES: Record<string, string> = {
   CUSTOMER: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -10,27 +14,59 @@ const ROLE_STYLES: Record<string, string> = {
   ADMIN:    "bg-violet-50 text-violet-700 border-violet-100",
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING:  "text-amber-600",
-  APPROVED: "text-emerald-600",
-  REJECTED: "text-red-500",
+const ACCOUNT_STYLES: Record<string, string> = {
+  ACTIVE: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  SUSPENDED: "bg-red-50 text-red-700 border-red-100",
 }
-const STATUS_FALLBACK_STYLE = "text-slate-400"
 
-export default async function AdminUsersPage() {
+const ROLES: Role[] = ["CUSTOMER", "ARTISAN", "ADMIN"]
+const STATUSES: UserStatus[] = ["ACTIVE", "SUSPENDED"]
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string; role?: string; status?: string }>
+}) {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
   const admin = await prisma.user.findUnique({ where: { id: userId } })
   if (!admin || admin.role !== "ADMIN") redirect("/")
 
-  const users = await prisma.user.findMany({
-    include: { artisanProfile: { select: { status: true, category: true } } },
-    orderBy: { createdAt: "desc" },
-  })
+  const params = await searchParams
+  const q = params.q?.trim() ?? ""
+  const role = ROLES.includes(params.role as Role) ? (params.role as Role) : undefined
+  const status = STATUSES.includes(params.status as UserStatus) ? (params.status as UserStatus) : undefined
+  const page = parsePage(params.page)
 
-  const customers = users.filter((u) => u.role === "CUSTOMER").length
-  const artisans  = users.filter((u) => u.role === "ARTISAN").length
+  const where: Prisma.UserWhereInput = {
+    ...(role ? { role } : {}),
+    ...(status ? { status } : {}),
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  }
+
+  const [totalCount, users, customers, artisans] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      include: { artisanProfile: { select: { status: true, category: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * ADMIN_PAGE_SIZE,
+      take: ADMIN_PAGE_SIZE,
+    }),
+    prisma.user.count({ where: { role: "CUSTOMER" } }),
+    prisma.user.count({ where: { role: "ARTISAN" } }),
+  ])
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / ADMIN_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -38,12 +74,32 @@ export default async function AdminUsersPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">All Users</h1>
-            <p className="text-slate-500 text-sm mt-1">{users.length} total · {customers} customers · {artisans} artisans</p>
+            <p className="text-slate-500 text-sm mt-1">{totalCount} matching · {customers} customers · {artisans} artisans</p>
           </div>
           <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
             <Users size={18} className="text-emerald-600" />
           </div>
         </div>
+
+        <form method="get" className="flex flex-wrap gap-2 mb-4">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="Search name or email"
+            className="flex-1 min-w-48 px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white"
+          />
+          <select name="role" defaultValue={role ?? ""} className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white">
+            <option value="">All roles</option>
+            {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select name="status" defaultValue={status ?? ""} className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white">
+            <option value="">All account statuses</option>
+            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button type="submit" className="px-4 py-2 text-sm font-medium bg-slate-900 text-white rounded-xl hover:bg-slate-800">
+            Filter
+          </button>
+        </form>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <table className="hidden md:table w-full text-sm">
@@ -52,8 +108,9 @@ export default async function AdminUsersPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Role</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Location</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Account</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Joined</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -63,15 +120,15 @@ export default async function AdminUsersPage() {
                   <td className="px-5 py-3.5 text-slate-500">{u.email}</td>
                   <td className="px-5 py-3.5">
                     <StatusBadge value={u.role} styles={ROLE_STYLES} />
-                    {u.artisanProfile && (
-                      <span className={`ml-2 text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status] ?? STATUS_FALLBACK_STYLE}`}>
-                        {u.artisanProfile.status}
-                      </span>
-                    )}
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500">{u.location ?? <span className="text-slate-300">-</span>}</td>
+                  <td className="px-5 py-3.5">
+                    <StatusBadge value={u.status} styles={ACCOUNT_STYLES} />
+                  </td>
                   <td className="px-5 py-3.5 text-slate-400 text-xs">
                     {new Date(u.createdAt).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <AdminUserActions userId={u.id} role={u.role} status={u.status} isSelf={u.id === userId} />
                   </td>
                 </tr>
               ))}
@@ -88,24 +145,22 @@ export default async function AdminUsersPage() {
                   </div>
                   <StatusBadge value={u.role} styles={ROLE_STYLES} className="shrink-0" />
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>{u.location ?? <span className="text-slate-300">-</span>}</span>
-                  <span className="text-slate-400">
-                    {new Date(u.createdAt).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
-                  </span>
-                </div>
-                {u.artisanProfile && (
-                  <span className={`inline-block text-xs font-medium ${STATUS_STYLES[u.artisanProfile.status] ?? STATUS_FALLBACK_STYLE}`}>
-                    {u.artisanProfile.status}
-                  </span>
-                )}
+                <AdminUserActions userId={u.id} role={u.role} status={u.status} isSelf={u.id === userId} />
               </div>
             ))}
           </div>
 
           {users.length === 0 && (
-            <div className="py-16 text-center text-slate-400 text-sm">No users yet.</div>
+            <div className="py-16 text-center text-slate-400 text-sm">No users match these filters.</div>
           )}
+
+          <AdminPagination
+            page={currentPage}
+            totalPages={totalPages}
+            total={totalCount}
+            pageSize={ADMIN_PAGE_SIZE}
+            hrefForPage={(p) => `/admin/users${buildSearchQuery({ q, role, status }, p)}`}
+          />
         </div>
       </div>
     </div>

@@ -9,6 +9,9 @@ export default async function ArtisanProfileEditPage() {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user || user.role !== "ARTISAN") redirect("/")
+
   const artisan = await prisma.artisanProfile.findUnique({
     where: { userId },
     include: { user: true },

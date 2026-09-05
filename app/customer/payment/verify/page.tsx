@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+﻿import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { email, FROM_EMAIL } from "@/lib/email"
@@ -20,6 +20,10 @@ async function verifyPaystackPayment(reference: string) {
 export default async function PaymentVerifyPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
+
+  // Defense-in-depth role guard.
+  const viewer = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+  if (!viewer || viewer.role !== "CUSTOMER") redirect("/")
 
   const { bookingId, reference, trxref } = await searchParams
   const ref = reference ?? trxref
@@ -67,13 +71,13 @@ export default async function PaymentVerifyPage({ searchParams }: { searchParams
         email.send({
           from: FROM_EMAIL,
           to: booking.customer.email,
-          subject: "Booking Confirmed - SmartBooking",
+          subject: "Booking Confirmed - CraftConnect",
           html: `<p>Hi ${booking.customer.name}, your booking for <strong>${booking.service.title}</strong> with ${booking.artisan.user.name} on ${new Date(booking.date).toLocaleDateString()} has been confirmed. Payment of GHS ${booking.service.price} received.</p>`,
         }),
         email.send({
           from: FROM_EMAIL,
           to: booking.artisan.user.email,
-          subject: "New Booking - SmartBooking",
+          subject: "New Booking - CraftConnect",
           html: `<p>Hi ${booking.artisan.user.name}, you have a new confirmed booking for <strong>${booking.service.title}</strong> on ${new Date(booking.date).toLocaleDateString()} from ${booking.customer.name}. Log in to view details.</p>`,
         }),
       ])

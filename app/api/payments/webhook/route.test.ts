@@ -4,6 +4,8 @@ import crypto from "crypto"
 const prismaMock = vi.hoisted(() => ({
   payment: { findUnique: vi.fn(), update: vi.fn() },
   booking: { update: vi.fn() },
+  platformConfig: { findUnique: vi.fn() },
+  adminAlert: { create: vi.fn() },
 }))
 
 vi.mock("@/lib/prisma", () => ({
@@ -35,6 +37,8 @@ describe("POST /api/payments/webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.PAYSTACK_SECRET_KEY = SECRET
+    prismaMock.platformConfig.findUnique.mockResolvedValue({ platformFeePercent: 10 })
+    prismaMock.adminAlert.create.mockResolvedValue({})
   })
 
   afterEach(() => {
@@ -91,12 +95,19 @@ describe("POST /api/payments/webhook", () => {
     expect(res.status).toBe(400)
   })
 
-  it("acknowledges but ignores events other than charge.success", async () => {
-    const body = JSON.stringify({ event: "charge.failed", data: { reference: "ref_1" } })
+  it("marks a failed charge and records an admin alert", async () => {
+    const body = JSON.stringify({ event: "charge.failed", data: { reference: "ref_fail" } })
+    prismaMock.payment.findUnique.mockResolvedValue({ id: "pay_1", status: "PENDING", amount: 80 })
+    prismaMock.payment.update.mockResolvedValue({})
+
     const res = await POST(webhookRequest(body))
 
     expect(res.status).toBe(200)
-    expect(prismaMock.payment.findUnique).not.toHaveBeenCalled()
+    expect(prismaMock.payment.update).toHaveBeenCalledWith({
+      where: { reference: "ref_fail" },
+      data: { status: "FAILED" },
+    })
+    expect(prismaMock.adminAlert.create).toHaveBeenCalled()
   })
 
   it("rejects a charge.success event with no reference", async () => {
@@ -130,7 +141,7 @@ describe("POST /api/payments/webhook", () => {
 
   it("marks the payment SUCCESS and confirms the booking on first delivery", async () => {
     const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
-    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_1", status: "PENDING" })
+    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_1", status: "PENDING", amount: 100 })
     prismaMock.payment.update.mockResolvedValue({})
     prismaMock.booking.update.mockResolvedValue({})
 
@@ -138,7 +149,7 @@ describe("POST /api/payments/webhook", () => {
 
     expect(prismaMock.payment.update).toHaveBeenCalledWith({
       where: { reference: "ref_1" },
-      data: expect.objectContaining({ status: "SUCCESS" }),
+      data: expect.objectContaining({ status: "SUCCESS", commissionAmount: 10 }),
     })
     expect(prismaMock.booking.update).toHaveBeenCalledWith({
       where: { id: "booking_1" },
@@ -149,7 +160,7 @@ describe("POST /api/payments/webhook", () => {
 
   it("acknowledges instead of erroring when the booking behind a confirmed payment no longer exists", async () => {
     const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
-    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_gone", status: "PENDING" })
+    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_gone", status: "PENDING", amount: 100 })
     prismaMock.payment.update.mockResolvedValue({})
     const notFoundError = Object.assign(new Error("Record not found"), { code: "P2025" })
     prismaMock.booking.update.mockRejectedValue(notFoundError)
@@ -163,7 +174,7 @@ describe("POST /api/payments/webhook", () => {
 
   it("returns 500 when the database update fails after signature verification passes", async () => {
     const body = JSON.stringify({ event: "charge.success", data: { reference: "ref_1" } })
-    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_1", status: "PENDING" })
+    prismaMock.payment.findUnique.mockResolvedValue({ bookingId: "booking_1", status: "PENDING", amount: 100 })
     prismaMock.payment.update.mockRejectedValue(new Error("db down"))
 
     const res = await POST(webhookRequest(body))

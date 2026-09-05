@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Zap, Compass, ArrowLeft } from "lucide-react"
+import { Compass, ArrowLeft } from "lucide-react"
+import BrandIcon from "@/components/brand-icon"
 
 export default function NotFound() {
   return (
@@ -8,10 +9,8 @@ export default function NotFound() {
       <nav className="bg-emerald-600 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 font-extrabold text-lg text-white">
-            <span className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
-              <Zap size={14} className="text-emerald-600" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7" priority />
+            CraftConnect
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/customer/browse" className="text-sm text-white/90 hover:text-white transition">
@@ -66,10 +65,8 @@ export default function NotFound() {
       <footer className="border-t bg-slate-950 text-slate-400 px-4 py-8 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <Link href="/" className="flex items-center gap-2 font-bold text-white">
-            <span className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-              <Zap size={13} className="text-white" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7 ring-1 ring-emerald-900/60" />
+            CraftConnect
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
             <Link href="/customer/browse" className="hover:text-white transition">Browse Artisans</Link>
@@ -78,7 +75,7 @@ export default function NotFound() {
             <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
           </div>
-          <p className="text-xs text-slate-600">© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} CraftConnect. All rights reserved.</p>
         </div>
       </footer>
     </div>

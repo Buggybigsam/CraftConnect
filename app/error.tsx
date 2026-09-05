@@ -2,7 +2,8 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import { Zap, AlertTriangle, RotateCcw, Home } from "lucide-react"
+import { AlertTriangle, RotateCcw, Home } from "lucide-react"
+import BrandIcon from "@/components/brand-icon"
 
 export default function GlobalError({
   error,
@@ -22,10 +23,8 @@ export default function GlobalError({
       <nav className="bg-emerald-600 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 font-extrabold text-lg text-white">
-            <span className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
-              <Zap size={14} className="text-emerald-600" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7" priority />
+            CraftConnect
           </Link>
           <div className="flex items-center gap-4">
             <Link
@@ -74,12 +73,10 @@ export default function GlobalError({
       <footer className="border-t bg-slate-950 text-slate-400 px-4 py-8 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <Link href="/" className="flex items-center gap-2 font-bold text-white">
-            <span className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-              <Zap size={13} className="text-white" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7 ring-1 ring-emerald-900/60" />
+            CraftConnect
           </Link>
-          <p className="text-xs text-slate-600">© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} CraftConnect. All rights reserved.</p>
         </div>
       </footer>
     </div>

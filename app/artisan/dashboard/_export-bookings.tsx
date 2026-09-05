@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { Download } from "lucide-react"
 import { toast } from "sonner"
@@ -74,7 +74,7 @@ export default function ExportBookingsButton({ bookings }: Props) {
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement("a")
     link.setAttribute("href", encodedUri)
-    link.setAttribute("download", `smartbooking_artisan_bookings_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.setAttribute("download", `CraftConnect_artisan_bookings_${new Date().toISOString().slice(0, 10)}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

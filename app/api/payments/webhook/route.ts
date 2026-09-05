@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     try {
       const payment = await prisma.payment.findUnique({
         where: { reference },
-        select: { bookingId: true, status: true },
+        select: { bookingId: true, status: true, amount: true },
       })
 
       // Unknown or already-processed reference: acknowledge without reprocessing.
@@ -63,9 +63,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true })
       }
 
+      const config = await prisma.platformConfig.findUnique({ where: { id: "default" } })
+      const percent = config?.platformFeePercent ?? 10
+      const commissionAmount = Math.round(payment.amount * percent) / 100
+
       await prisma.payment.update({
         where: { reference },
-        data: { status: "SUCCESS", paidAt: new Date() },
+        data: { status: "SUCCESS", paidAt: new Date(), commissionAmount },
       })
 
       try {
@@ -84,6 +88,30 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error("Failed to process Paystack webhook", err)
       return NextResponse.json({ error: "Failed to process webhook" }, { status: 500 })
+    }
+  }
+
+  if (event.event === "charge.failed") {
+    const reference = event.data?.reference
+    if (reference) {
+      const payment = await prisma.payment.findUnique({
+        where: { reference },
+        select: { id: true, status: true, amount: true },
+      })
+      if (payment && payment.status !== "SUCCESS" && payment.status !== "REFUNDED") {
+        await prisma.payment.update({
+          where: { reference },
+          data: { status: "FAILED" },
+        })
+        await prisma.adminAlert.create({
+          data: {
+            type: "FAILED_PAYMENT",
+            title: "Payment failed",
+            message: `Payment ${reference} (GHS ${payment.amount}) failed.`,
+            link: "/admin/bookings",
+          },
+        }).catch(console.error)
+      }
     }
   }
 

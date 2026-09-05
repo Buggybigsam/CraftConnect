@@ -59,14 +59,14 @@ describe("lib/email", () => {
     const { email: emailClient } = await import("./email")
 
     const result = await emailClient.send({
-      from: "noreply@smartbooking.com",
+      from: "noreply@CraftConnect.com",
       to: "customer@example.com",
       subject: "Booking confirmed",
       html: "<p>Your booking is confirmed.</p>",
     })
 
     expect(sendMock).toHaveBeenCalledWith({
-      from: "noreply@smartbooking.com",
+      from: "noreply@CraftConnect.com",
       to: "customer@example.com",
       subject: "Booking confirmed",
       html: "<p>Your booking is confirmed.</p>",
@@ -80,7 +80,7 @@ describe("lib/email", () => {
     const { email: emailClient } = await import("./email")
 
     await expect(
-      emailClient.send({ from: "noreply@smartbooking.com", to: "customer@example.com", subject: "x", html: "x" })
+      emailClient.send({ from: "noreply@CraftConnect.com", to: "customer@example.com", subject: "x", html: "x" })
     ).rejects.toThrow("SendGrid API unreachable")
   })
 
@@ -88,7 +88,7 @@ describe("lib/email", () => {
     delete process.env.SENDGRID_FROM_EMAIL
     const { FROM_EMAIL } = await import("./email")
 
-    expect(FROM_EMAIL).toBe("noreply@smartbooking.com")
+    expect(FROM_EMAIL).toBe("noreply@CraftConnect.com")
   })
 
   it("uses SENDGRID_FROM_EMAIL when it is set", async () => {

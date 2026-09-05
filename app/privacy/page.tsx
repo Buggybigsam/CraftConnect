@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { Zap, ShieldCheck, ArrowLeft } from "lucide-react"
+import { ShieldCheck, ArrowLeft } from "lucide-react"
+import BrandIcon from "@/components/brand-icon"
 
 export const metadata = {
-  title: "Privacy Policy - SmartBooking",
-  description: "Learn how SmartBooking collects, uses, and protects your personal data.",
+  title: "Privacy Policy - CraftConnect",
+  description: "Learn how CraftConnect collects, uses, and protects your personal data.",
 }
 
 export default function PrivacyPage() {
@@ -13,10 +14,8 @@ export default function PrivacyPage() {
       <nav className="bg-emerald-600 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 font-extrabold text-lg text-white">
-            <span className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
-              <Zap size={14} className="text-emerald-600" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7" priority />
+            CraftConnect
           </Link>
           <Link href="/" className="flex items-center gap-1.5 text-sm text-emerald-100 hover:text-white transition">
             <ArrowLeft size={14} /> Back to Home
@@ -29,7 +28,7 @@ export default function PrivacyPage() {
         {/* Template notice banner */}
         <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl p-4 mb-8">
           <p className="font-semibold mb-0.5">Template Notice</p>
-          <p>This is placeholder legal copy for SmartBooking. Customize this policy with your organization&apos;s specific legal and regulatory disclosures.</p>
+          <p>This is placeholder legal copy for CraftConnect. Customize this policy with your organization&apos;s specific legal and regulatory disclosures.</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-10 space-y-8">
@@ -44,7 +43,7 @@ export default function PrivacyPage() {
           <section className="space-y-3 text-sm text-slate-600 leading-relaxed">
             <h2 className="text-base font-semibold text-slate-900">1. Information We Collect</h2>
             <p>
-              SmartBooking collects information you provide directly to us when you create an account, apply as an artisan, book a service, or communicate with us. This includes your name, email address, phone number, location, payment information, and service preferences.
+              CraftConnect collects information you provide directly to us when you create an account, apply as an artisan, book a service, or communicate with us. This includes your name, email address, phone number, location, payment information, and service preferences.
             </p>
           </section>
 
@@ -78,7 +77,7 @@ export default function PrivacyPage() {
           <section className="space-y-3 text-sm text-slate-600 leading-relaxed">
             <h2 className="text-base font-semibold text-slate-900">5. Contact Us</h2>
             <p>
-              If you have questions regarding this Privacy Policy or your personal information, please contact our data privacy team at <a href="mailto:privacy@smartbooking.com" className="text-emerald-600 hover:underline">privacy@smartbooking.com</a>.
+              If you have questions regarding this Privacy Policy or your personal information, please contact our data privacy team at <a href="mailto:privacy@CraftConnect.com" className="text-emerald-600 hover:underline">privacy@CraftConnect.com</a>.
             </p>
           </section>
         </div>
@@ -88,10 +87,8 @@ export default function PrivacyPage() {
       <footer className="border-t bg-slate-950 text-slate-400 px-4 py-8 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <Link href="/" className="flex items-center gap-2 font-bold text-white">
-            <span className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-              <Zap size={13} className="text-white" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7 ring-1 ring-emerald-900/60" />
+            CraftConnect
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
             <Link href="/customer/browse" className="hover:text-white transition">Browse Artisans</Link>
@@ -100,7 +97,7 @@ export default function PrivacyPage() {
             <Link href="/privacy" className="text-white transition">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
           </div>
-          <p className="text-xs text-slate-600">© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} CraftConnect. All rights reserved.</p>
         </div>
       </footer>
     </div>

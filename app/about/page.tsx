@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { Zap, BadgeCheck, Shield, Clock, Users, ArrowRight, ArrowLeft } from "lucide-react"
+import { BadgeCheck, Shield, Clock, Users, ArrowRight, ArrowLeft } from "lucide-react"
+import BrandIcon from "@/components/brand-icon"
 
 export const metadata = {
-  title: "About Us - SmartBooking",
-  description: "Learn about SmartBooking's mission to connect people with verified local artisans.",
+  title: "About Us - CraftConnect",
+  description: "Learn about CraftConnect's mission to connect people with verified local artisans.",
 }
 
 const VALUES = [
@@ -36,10 +37,8 @@ export default function AboutPage() {
       <nav className="bg-emerald-600 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 font-extrabold text-lg text-white">
-            <span className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
-              <Zap size={14} className="text-emerald-600" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7" priority />
+            CraftConnect
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/customer/browse" className="text-sm text-white/90 hover:text-white transition">
@@ -56,13 +55,13 @@ export default function AboutPage() {
       <header className="bg-gradient-to-b from-emerald-600 to-emerald-500 py-16 px-4 text-white text-center">
         <div className="max-w-3xl mx-auto">
           <span className="inline-block text-xs font-bold tracking-wider uppercase bg-emerald-700/60 px-3 py-1 rounded-full mb-3 text-emerald-100">
-            About SmartBooking
+            About CraftConnect
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
             Connecting You with Ghana&apos;s Best Local Artisans
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-            We are building the most trusted marketplace for skilled trade services — making finding reliable electricians, plumbers, painters, and carpenters effortless.
+            We are building the most trusted marketplace for skilled trade services, making finding reliable electricians, plumbers, painters, and carpenters effortless.
           </p>
         </div>
       </header>
@@ -72,7 +71,7 @@ export default function AboutPage() {
         {/* Template notice banner */}
         <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl p-4">
           <p className="font-semibold mb-0.5">Template Notice</p>
-          <p>This is placeholder content for SmartBooking&apos;s About page. Update this section with your company&apos;s founders, milestones, and brand narrative before launching.</p>
+          <p>This is placeholder content for CraftConnect&apos;s About page. Update this section with your company&apos;s founders, milestones, and brand narrative before launching.</p>
         </div>
 
         {/* Mission & Story */}
@@ -83,7 +82,7 @@ export default function AboutPage() {
               Finding dependable home and commercial service professionals used to mean asking neighbors, bargaining blindly, and dealing with unreliable schedules.
             </p>
             <p className="text-slate-600 text-sm leading-relaxed">
-              SmartBooking bridges this gap by creating an open, transparent platform where skilled professionals are rewarded for quality work, and clients can book with absolute confidence.
+              CraftConnect bridges this gap by creating an open, transparent platform where skilled professionals are rewarded for quality work, and clients can book with absolute confidence.
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
@@ -151,10 +150,8 @@ export default function AboutPage() {
       <footer className="border-t bg-slate-950 text-slate-400 px-4 py-8 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
           <Link href="/" className="flex items-center gap-2 font-bold text-white">
-            <span className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-              <Zap size={13} className="text-white" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-7 w-7 ring-1 ring-emerald-900/60" />
+            CraftConnect
           </Link>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
             <Link href="/customer/browse" className="hover:text-white transition">Browse Artisans</Link>
@@ -163,7 +160,7 @@ export default function AboutPage() {
             <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
           </div>
-          <p className="text-xs text-slate-600">© {new Date().getFullYear()} SmartBooking. All rights reserved.</p>
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} CraftConnect. All rights reserved.</p>
         </div>
       </footer>
     </div>

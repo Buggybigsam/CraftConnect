@@ -4,7 +4,9 @@ const authMock = vi.hoisted(() => vi.fn())
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn() },
-  artisanProfile: { update: vi.fn() },
+  artisanProfile: { update: vi.fn(), findMany: vi.fn() },
+  adminAuditLog: { create: vi.fn() },
+  adminAlert: { create: vi.fn() },
 }))
 
 const emailSendMock = vi.hoisted(() => vi.fn())
@@ -19,14 +21,15 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/email", () => ({
   email: { send: emailSendMock },
-  FROM_EMAIL: "noreply@smartbooking.test",
+  FROM_EMAIL: "noreply@CraftConnect.test",
 }))
 
-import { PATCH } from "./route"
+import { PATCH, GET } from "./route"
 
-function jsonRequest(body: unknown) {
+function jsonRequest(body: unknown, ip = "127.0.0.1") {
   return new Request("http://localhost/api/admin/artisans", {
     method: "PATCH",
+    headers: { "Content-Type": "application/json", "x-forwarded-for": ip },
     body: JSON.stringify(body),
   })
 }
@@ -35,6 +38,27 @@ describe("PATCH /api/admin/artisans", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     emailSendMock.mockResolvedValue({})
+    prismaMock.adminAuditLog.create.mockResolvedValue({})
+    prismaMock.adminAlert.create.mockResolvedValue({})
+  })
+
+  it("returns 429 once the per-IP rate limit is exceeded", async () => {
+    authMock.mockResolvedValue({ userId: "admin_1" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+    prismaMock.artisanProfile.update.mockResolvedValue({
+      id: "ap_1",
+      status: "APPROVED",
+      user: { email: "artisan@example.com", name: "Kofi" },
+    })
+
+    const ip = "198.51.100.80"
+    for (let i = 0; i < 30; i++) {
+      const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }, ip))
+      expect(res.status).toBe(200)
+    }
+
+    const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }, ip))
+    expect(res.status).toBe(429)
   })
 
   it("returns 401 when the caller is not authenticated", async () => {
@@ -65,14 +89,24 @@ describe("PATCH /api/admin/artisans", () => {
     expect(res.status).toBe(403)
   })
 
-  it("rejects a status other than APPROVED/REJECTED", async () => {
+  it("allows reopening an application back to PENDING", async () => {
     authMock.mockResolvedValue({ userId: "admin_1" })
     prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+    prismaMock.artisanProfile.update.mockResolvedValue({
+      id: "ap_1",
+      status: "PENDING",
+      user: { email: "artisan@example.com", name: "Kofi" },
+    })
 
     const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "PENDING" }))
 
-    expect(res.status).toBe(400)
-    expect(prismaMock.artisanProfile.update).not.toHaveBeenCalled()
+    expect(res.status).toBe(200)
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: "ARTISAN_PENDING", targetId: "ap_1" }),
+      })
+    )
+    expect(emailSendMock).not.toHaveBeenCalled()
   })
 
   it("rejects an arbitrary/unknown status value", async () => {
@@ -163,6 +197,59 @@ describe("PATCH /api/admin/artisans", () => {
 
     await expect(PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }))).rejects.toThrow(
       "connection lost"
+    )
+  })
+
+  it("returns 429 once the per-IP rate limit is exceeded", async () => {
+    authMock.mockResolvedValue({ userId: "admin_1" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+    prismaMock.artisanProfile.update.mockResolvedValue({
+      id: "ap_1",
+      status: "APPROVED",
+      user: { email: "artisan@example.com", name: "Kofi" },
+    })
+
+    const ip = "203.0.113.10"
+    for (let i = 0; i < 30; i++) {
+      const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }, ip))
+      expect(res.status).toBe(200)
+    }
+
+    const res = await PATCH(jsonRequest({ artisanProfileId: "ap_1", status: "APPROVED" }, ip))
+    expect(res.status).toBe(429)
+  })
+})
+
+describe("GET /api/admin/artisans", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("returns 401 when unauthenticated", async () => {
+    authMock.mockResolvedValue({ userId: null })
+    const res = await GET(new Request("http://localhost/api/admin/artisans"))
+    expect(res.status).toBe(401)
+  })
+
+  it("returns 403 for a non-admin", async () => {
+    authMock.mockResolvedValue({ userId: "user_1" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "user_1", role: "CUSTOMER" })
+    const res = await GET(new Request("http://localhost/api/admin/artisans"))
+    expect(res.status).toBe(403)
+  })
+
+  it("lists artisans filtered by status", async () => {
+    authMock.mockResolvedValue({ userId: "admin_1" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+    prismaMock.artisanProfile.findMany.mockResolvedValue([])
+
+    const res = await GET(new Request("http://localhost/api/admin/artisans?status=APPROVED"))
+
+    expect(res.status).toBe(200)
+    expect(prismaMock.artisanProfile.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { status: "APPROVED" },
+      })
     )
   })
 })

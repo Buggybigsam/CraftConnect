@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import Link from "next/link"
@@ -10,6 +10,7 @@ import {
   Zap, Wrench, Sparkles, Hammer, Paintbrush, Car, BookOpen, Building2,
   ArrowLeft, CheckCircle, Loader2, ChevronDown,
 } from "lucide-react"
+import BrandIcon from "@/components/brand-icon"
 
 const CATEGORIES = [
   { value: "Electrician", Icon: Zap        },
@@ -20,6 +21,18 @@ const CATEGORIES = [
   { value: "Mechanic",    Icon: Car        },
   { value: "Tutor",       Icon: BookOpen   },
   { value: "Mason",       Icon: Building2  },
+  { value: "AC Technician",       Icon: Wrench     },
+  { value: "Aluminum Fabricator", Icon: Hammer     },
+  { value: "Appliance Repair",    Icon: Wrench     },
+  { value: "Barber",              Icon: Sparkles   },
+  { value: "Blacksmith",          Icon: Hammer     },
+  { value: "Cobbler",             Icon: Hammer     },
+  { value: "Makeup Artist",       Icon: Sparkles   },
+  { value: "Plasterer",           Icon: Building2  },
+  { value: "Tailor",              Icon: Paintbrush },
+  { value: "Tiler",               Icon: Building2  },
+  { value: "Welder",              Icon: Hammer     },
+  { value: "Window Installer",    Icon: Wrench     },
   { value: "Other",       Icon: Zap        },
 ]
 
@@ -37,31 +50,89 @@ export default function ArtisanApplyPage() {
   const [error, setError]     = useState("")
   const [category, setCategory] = useState("")
 
+  // On mount: if user just came back from sign-up, restore saved form and auto-submit
+  useEffect(() => {
+    if (!isLoaded || !user) return
+    const saved = sessionStorage.getItem("artisan_apply_draft")
+    if (!saved) return
+
+    const data = JSON.parse(saved) as Record<string, string>
+    sessionStorage.removeItem("artisan_apply_draft")
+
+    // Populate visible state (deferred to avoid setState-in-effect lint error)
+    setTimeout(() => {
+      if (data.category) setCategory(data.category)
+    }, 0)
+
+    // Short delay so the form fields mount, then auto-submit
+    setTimeout(async () => {
+      setLoading(true)
+      setError("")
+      const res = await fetch("/api/users/onboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role:         "ARTISAN",
+          bio:          data.bio,
+          category:     data.category,
+          pricePerHour: Number(data.pricePerHour),
+          location:     data.location,
+          phone:        data.phone,
+          yearsExp:     Number(data.yearsExp),
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        const msg = d.error ?? "Something went wrong"
+        setError(msg)
+        toast.error(msg)
+        setLoading(false)
+      } else {
+        toast.success("Application submitted successfully!")
+        router.push("/artisan/dashboard")
+      }
+    }, 300)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, user])
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!user) { router.push("/sign-up"); return }
+    const fd = new FormData(e.currentTarget)
+    const data = {
+      bio:          String(fd.get("bio") ?? ""),
+      category:     String(fd.get("category") ?? ""),
+      pricePerHour: String(fd.get("pricePerHour") ?? ""),
+      location:     String(fd.get("location") ?? ""),
+      phone:        String(fd.get("phone") ?? ""),
+      yearsExp:     String(fd.get("yearsExp") ?? ""),
+    }
+
+    if (!user) {
+      // Save form and send to Artisan sign-up flow
+      sessionStorage.setItem("artisan_apply_draft", JSON.stringify(data))
+      router.push("/sign-up?role=artisan")
+      return
+    }
 
     setLoading(true)
     setError("")
-    const fd = new FormData(e.currentTarget)
-
     const res = await fetch("/api/users/onboard", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         role:         "ARTISAN",
-        bio:          fd.get("bio"),
-        category:     fd.get("category"),
-        pricePerHour: Number(fd.get("pricePerHour")),
-        location:     fd.get("location"),
-        phone:        fd.get("phone"),
-        yearsExp:     Number(fd.get("yearsExp")),
+        bio:          data.bio,
+        category:     data.category,
+        pricePerHour: Number(data.pricePerHour),
+        location:     data.location,
+        phone:        data.phone,
+        yearsExp:     Number(data.yearsExp),
       }),
     })
 
     if (!res.ok) {
-      const data = await res.json()
-      const errorMsg = data.error ?? "Something went wrong"
+      const d = await res.json()
+      const errorMsg = d.error ?? "Something went wrong"
       setError(errorMsg)
       toast.error(errorMsg)
       setLoading(false)
@@ -88,10 +159,8 @@ export default function ArtisanApplyPage() {
       <nav className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-slate-900">
-            <span className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center">
-              <Zap size={12} className="text-white" />
-            </span>
-            SmartBooking
+            <BrandIcon className="h-6 w-6 ring-1 ring-slate-200" priority />
+            CraftConnect
           </Link>
           <Link href="/" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition">
             <ArrowLeft size={14} /> Back to home
@@ -107,7 +176,7 @@ export default function ArtisanApplyPage() {
             <Zap size={11} /> For Artisans
           </div>
           <h1 className="text-3xl font-bold text-slate-900 leading-tight mb-3">
-            Grow your business<br />with SmartBooking
+            Grow your business<br />with CraftConnect
           </h1>
           <p className="text-slate-500 text-sm leading-relaxed mb-6">
             Join hundreds of verified artisans across Ghana. Get discovered,
@@ -117,7 +186,7 @@ export default function ArtisanApplyPage() {
           <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-8">
             <Image
               src="/images/artisans/roofer.jpg"
-              alt="Artisan working on SmartBooking"
+              alt="Artisan working on CraftConnect"
               fill
               sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover"

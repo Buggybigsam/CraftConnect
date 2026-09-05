@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ChevronDown, Search, MapPin, SlidersHorizontal } from "lucide-react"
 
 interface Props {
-  categories: string[]
   params: { q?: string; location?: string; maxPrice?: string; minRating?: string; category?: string }
 }
 
@@ -15,8 +15,8 @@ export default function BrowseFilters({ params }: Props) {
   const [maxPrice, setMaxPrice] = useState(params.maxPrice ?? "")
   const [minRating, setMinRating] = useState(params.minRating ?? "0")
 
-  function applyFilters(e: React.FormEvent) {
-    e.preventDefault()
+  function applyFilters(e?: React.FormEvent) {
+    if (e) e.preventDefault()
     const sp = new URLSearchParams()
     if (q) sp.set("q", q)
     if (location) sp.set("location", location)
@@ -27,55 +27,64 @@ export default function BrowseFilters({ params }: Props) {
   }
 
   return (
-    <form onSubmit={applyFilters} className="bg-white rounded-xl border p-4 flex flex-wrap gap-3 items-end">
-      <div className="flex-1 min-w-[160px]">
-        <label className="text-xs text-gray-500 block mb-1">Search</label>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Name, skill, keyword..."
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-      <div className="flex-1 min-w-[140px]">
-        <label className="text-xs text-gray-500 block mb-1">Location</label>
-        <input
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="e.g. Accra"
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-      <div className="min-w-[120px]">
-        <label className="text-xs text-gray-500 block mb-1">Max price (GHS/hr)</label>
-        <input
-          type="number"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
-          placeholder="Any"
-          min={0}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-      <div className="min-w-[110px]">
-        <label className="text-xs text-gray-500 block mb-1">Min rating</label>
-        <select
-          value={minRating}
-          onChange={(e) => setMinRating(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <form onSubmit={applyFilters} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto_auto_auto]">
+        <label className="relative block">
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by skill or name"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+          />
+        </label>
+
+        <label className="relative block">
+          <MapPin size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Location"
+            className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200"
+          />
+        </label>
+
+        <div className="relative">
+          <select
+            value={minRating}
+            onChange={(e) => setMinRating(e.target.value)}
+            className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-9 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 lg:w-36"
+          >
+            <option value="0">Any rating</option>
+            <option value="3">3+ stars</option>
+            <option value="4">4+ stars</option>
+            <option value="4.5">4.5+ stars</option>
+          </select>
+          <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        </div>
+
+        <div className="relative">
+          <select
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-9 text-sm font-medium text-slate-700 outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-200 lg:w-40"
+          >
+            <option value="">Any price</option>
+            <option value="50">Under GHS 50</option>
+            <option value="100">Under GHS 100</option>
+            <option value="200">Under GHS 200</option>
+          </select>
+          <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        </div>
+
+        <button
+          type="submit"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
         >
-          <option value="0">Any</option>
-          <option value="3">3+ ★</option>
-          <option value="4">4+ ★</option>
-          <option value="4.5">4.5+ ★</option>
-        </select>
+          <SlidersHorizontal size={15} />
+          Apply
+        </button>
       </div>
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
-      >
-        Search
-      </button>
     </form>
   )
 }

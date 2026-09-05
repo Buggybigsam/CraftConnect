@@ -5,7 +5,7 @@ const currentUserMock = vi.hoisted(() => vi.fn())
 const updateUserMetadataMock = vi.hoisted(() => vi.fn())
 
 const prismaMock = vi.hoisted(() => ({
-  user: { upsert: vi.fn() },
+  user: { upsert: vi.fn(), findUnique: vi.fn() },
   artisanProfile: { upsert: vi.fn() },
 }))
 
@@ -39,6 +39,7 @@ describe("POST /api/users/onboard", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     updateUserMetadataMock.mockResolvedValue({})
+    prismaMock.user.findUnique.mockResolvedValue({ id: "user_1", role: "CUSTOMER" })
   })
 
   it("returns 401 when the caller is not authenticated", async () => {
@@ -63,6 +64,7 @@ describe("POST /api/users/onboard", () => {
     authMock.mockResolvedValue({ userId: "user_1" })
     currentUserMock.mockResolvedValue(clerkUser)
     prismaMock.user.upsert.mockResolvedValue({})
+    prismaMock.user.findUnique.mockResolvedValue({ id: "user_1", role: "CUSTOMER" })
 
     const res = await POST(jsonRequest({}))
 
@@ -112,6 +114,7 @@ describe("POST /api/users/onboard", () => {
     currentUserMock.mockResolvedValue(clerkUser)
     prismaMock.user.upsert.mockResolvedValue({})
     prismaMock.artisanProfile.upsert.mockResolvedValue({})
+    prismaMock.user.findUnique.mockResolvedValue({ id: "user_2", role: "ARTISAN" })
 
     const res = await POST(
       jsonRequest({
@@ -157,6 +160,33 @@ describe("POST /api/users/onboard", () => {
         update: expect.objectContaining({ status: "PENDING" }),
       })
     )
+  })
+
+  it("preserves an existing ADMIN role in Clerk when re-onboarding as customer", async () => {
+    authMock.mockResolvedValue({ userId: "admin_1" })
+    currentUserMock.mockResolvedValue(clerkUser)
+    prismaMock.user.upsert.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "admin_1", role: "ADMIN" })
+
+    const res = await POST(jsonRequest({ role: "CUSTOMER" }))
+
+    expect(updateUserMetadataMock).toHaveBeenCalledWith("admin_1", {
+      publicMetadata: { role: "ADMIN" },
+    })
+    expect(res.status).toBe(200)
+  })
+
+  it("preserves an existing ARTISAN role in Clerk when re-onboarding as customer", async () => {
+    authMock.mockResolvedValue({ userId: "artisan_1" })
+    currentUserMock.mockResolvedValue(clerkUser)
+    prismaMock.user.upsert.mockResolvedValue({ id: "artisan_1", role: "ARTISAN" })
+    prismaMock.user.findUnique.mockResolvedValue({ id: "artisan_1", role: "ARTISAN" })
+
+    await POST(jsonRequest({ role: "CUSTOMER" }))
+
+    expect(updateUserMetadataMock).toHaveBeenCalledWith("artisan_1", {
+      publicMetadata: { role: "ARTISAN" },
+    })
   })
 
   it("returns 500 when the database write fails", async () => {

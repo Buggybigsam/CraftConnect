@@ -1,22 +1,41 @@
+import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
+import { redirect } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
-import { MapPin, Star, User } from "lucide-react"
+import {
+  MapPin,
+  Star,
+  User,
+  ShieldCheck,
+  Wrench,
+  Zap,
+  Hammer,
+  Paintbrush,
+  Settings,
+  CheckCircle2,
+  LayoutGrid,
+  LucideIcon,
+  ArrowRight,
+} from "lucide-react"
+import { ARTISAN_CATEGORIES, getArtisanPhoto } from "@/lib/artisan-categories"
 import BrowseFilters from "./_filters"
 
-const CATEGORIES = [
-  "All", "Electrician", "Plumber", "Cleaner", "Carpenter",
-  "Painter", "Mechanic", "Tutor", "Mason", "Other",
-]
-
-const CATEGORY_PHOTOS: Record<string, string> = {
-  Electrician: "/images/artisans/electrician-wiring.jpg",
-  Plumber:     "/images/artisans/plumber-sink.jpg",
-  Carpenter:   "/images/artisans/carpenter-workshop.jpg",
-  Painter:     "/images/artisans/painter-roller.jpg",
-  Mechanic:    "/images/artisans/mechanic-engine.jpg",
-  Mason:       "/images/artisans/mason-plastering.jpg",
+const CAT_ICONS: Record<string, LucideIcon> = {
+  "All Categories": LayoutGrid,
+  Plumbing: Wrench,
+  Electrical: Zap,
+  Carpentry: Hammer,
+  Painting: Paintbrush,
+  "AC Repair": Settings,
+  Cleaning: Settings,
+  "Appliance Repair": Settings,
+  "Pest Control": Settings,
+  Tiling: Settings,
+  Welding: Settings,
+  Masonry: Settings,
 }
+
+const CATEGORIES = ["All Categories", ...ARTISAN_CATEGORIES]
 
 interface SearchParams {
   q?: string
@@ -32,15 +51,15 @@ async function getArtisans(params: SearchParams) {
   return prisma.artisanProfile.findMany({
     where: {
       status: "APPROVED",
-      ...(category && category !== "All" && { category }),
+      ...(category && category !== "All Categories" && { category }),
       ...(location && { location: { contains: location, mode: "insensitive" } }),
       rating:       { gte: parseFloat(minRating) },
       pricePerHour: { lte: parseFloat(maxPrice)  },
       ...(q && {
         OR: [
-          { user:     { name:     { contains: q, mode: "insensitive" } } },
-          { category:             { contains: q, mode: "insensitive" }   },
-          { bio:                  { contains: q, mode: "insensitive" }   },
+          { user: { name: { contains: q, mode: "insensitive" } } },
+          { category: { contains: q, mode: "insensitive" } },
+          { bio: { contains: q, mode: "insensitive" } },
         ],
       }),
     },
@@ -49,106 +68,178 @@ async function getArtisans(params: SearchParams) {
   })
 }
 
+function categoryHref(params: SearchParams, category: string) {
+  const sp = new URLSearchParams()
+  if (params.q) sp.set("q", params.q)
+  if (params.location) sp.set("location", params.location)
+  if (params.minRating) sp.set("minRating", params.minRating)
+  if (params.maxPrice) sp.set("maxPrice", params.maxPrice)
+  if (category !== "All Categories") sp.set("category", category)
+  return `/customer/browse?${sp.toString()}`
+}
+
 export default async function BrowsePage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const params  = await searchParams
+  const { userId } = await auth()
+  if (!userId) redirect("/sign-in")
+
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) redirect("/auth/redirect")
+  if (user.role === "ARTISAN") redirect("/artisan/dashboard")
+  if (user.role === "ADMIN") redirect("/admin/dashboard")
+
+  const params = await searchParams
   const artisans = await getArtisans(params).catch(() => [])
+  const currentCategory = params.category || "All Categories"
 
   return (
-    <div className="min-h-screen bg-slate-50">
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Find an Artisan</h1>
-        <p className="text-slate-500 text-sm mb-6">Browse {artisans.length} verified professionals near you.</p>
-
-        <BrowseFilters categories={CATEGORIES} params={params} />
-
-        {/* Category pills */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-6 mt-4 scrollbar-hide">
-          {CATEGORIES.map((cat) => {
-            const active = (params.category ?? "") === (cat === "All" ? "" : cat)
-            return (
-              <Link
-                key={cat}
-                href={`/customer/browse?${new URLSearchParams({ ...params, category: cat === "All" ? "" : cat })}`}
-                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition ${
-                  active
-                    ? "bg-emerald-600 text-white border-emerald-600"
-                    : "bg-white text-slate-700 border-slate-200 hover:border-emerald-400"
-                }`}
-              >
-                {cat}
-              </Link>
-            )
-          })}
+    <div className="min-h-screen bg-slate-100/70 font-sans">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">CraftConnect marketplace</p>
+            <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">Find Artisans</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Compare verified professionals by skill, location, rating, and price before you book.
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+            <span className="font-bold text-slate-950">{artisans.length}</span>
+            <span className="ml-1 text-slate-500">available artisans</span>
+          </div>
         </div>
 
-        {artisans.length === 0 ? (
-          <div className="text-center py-24 text-slate-500">
-            <User size={40} className="mx-auto mb-3 text-slate-300" />
-            <p className="text-base font-medium mb-1">No artisans found</p>
-            <p className="text-sm">Try adjusting your filters or search terms.</p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {artisans.map((a) => (
-              <Link
-                key={a.id}
-                href={`/customer/artisan/${a.userId}`}
-                className="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-emerald-200 hover:shadow-md hover:-translate-y-0.5 transition-all"
-              >
-                {CATEGORY_PHOTOS[a.category] && (
-                  <div className="relative h-32 w-full">
-                    <Image
-                      src={CATEGORY_PHOTOS[a.category]}
-                      alt={`${a.category} at work`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 25vw"
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <div className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  {a.user.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={a.user.imageUrl} className="w-11 h-11 rounded-full object-cover" alt={a.user.name} />
-                  ) : (
-                    <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center">
-                      <User size={20} className="text-emerald-400" />
+        <BrowseFilters params={params} />
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[260px_1fr]">
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-100 px-5 py-4">
+                <h2 className="text-sm font-bold text-slate-950">Categories</h2>
+                <p className="mt-1 text-xs text-slate-500">Filter by service type</p>
+              </div>
+              <div className="p-2">
+                {CATEGORIES.map((cat) => {
+                  const Icon = CAT_ICONS[cat] || LayoutGrid
+                  const isActive = currentCategory === cat
+
+                  return (
+                    <Link
+                      key={cat}
+                      href={categoryHref(params, cat)}
+                      className={`flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                        isActive
+                          ? "bg-slate-950 text-white"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                      }`}
+                    >
+                      <Icon size={17} className={isActive ? "text-white" : "text-slate-400"} />
+                      {cat}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          </aside>
+
+          <div>
+            {artisans.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
+                <User size={40} className="mx-auto mb-3 text-slate-300" />
+                <p className="mb-1 text-base font-semibold text-slate-800">No artisans found</p>
+                <p className="text-sm text-slate-500">Try adjusting your filters or search terms.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {artisans.map((a) => {
+                  const artisanPhoto = getArtisanPhoto(a.user.name, a.category)
+
+                  return (
+                    <div
+                      key={a.id}
+                      className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md md:grid-cols-[auto_1fr_auto]"
+                    >
+                      <div className="flex items-start gap-4 md:block">
+                        <div className="h-20 w-20 overflow-hidden rounded-xl bg-slate-100">
+                          {artisanPhoto ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={artisanPhoto} className="h-full w-full object-cover" alt={`${a.category} artisan ${a.user.name}`} />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                              <User size={30} className="text-slate-400" />
+                            </div>
+                          )}
+                        </div>
+                      <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700 md:flex">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Available
+                      </span>
                     </div>
-                  )}
-                  <div>
-                    <div className="font-semibold text-slate-900 text-sm">{a.user.name}</div>
-                    <div className="text-xs text-emerald-600 font-medium">{a.category}</div>
-                  </div>
-                </div>
 
-                <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed">{a.bio}</p>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-bold text-slate-950">{a.user.name}</h3>
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                          {a.category}
+                        </span>
+                      </div>
 
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <div className="flex items-center gap-1">
-                    <Star size={13} className="text-amber-400 fill-amber-400" />
-                    <span className="font-semibold text-slate-900">{a.rating.toFixed(1)}</span>
-                    <span className="text-slate-400 text-xs">({a.totalReviews})</span>
-                  </div>
-                  <div className="font-bold text-slate-900">
-                    GHS {a.pricePerHour}<span className="font-normal text-slate-400 text-xs">/hr</span>
-                  </div>
-                </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-1 font-semibold text-slate-900">
+                          <Star size={16} className="fill-amber-400 text-amber-400" />
+                          {a.rating.toFixed(1)}
+                          <span className="font-normal text-slate-400">({a.totalReviews})</span>
+                        </div>
+                        <div className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                          <ShieldCheck size={14} /> Verified
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin size={14} className="text-slate-400" />
+                          {a.location}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 size={14} className="text-slate-400" />
+                          {a.yearsExp}+ yrs experience
+                        </div>
+                      </div>
 
-                <div className="flex items-center gap-1 text-xs text-slate-400">
-                  <MapPin size={11} />
-                  {a.location}
-                </div>
-                </div>
-              </Link>
-            ))}
+                      {a.bio && (
+                        <p className="mt-3 line-clamp-2 max-w-3xl text-sm leading-6 text-slate-500">
+                          {a.bio}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4 md:min-w-40 md:flex-col md:items-end md:justify-center md:border-l md:border-t-0 md:pl-5 md:pt-0">
+                      <div className="text-left md:text-right">
+                        <div className="text-lg font-bold text-slate-950">GHS {a.pricePerHour}</div>
+                        <div className="text-xs text-slate-500">per hour</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/customer/artisan/${a.userId}`}
+                          className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          Profile
+                        </Link>
+                        <Link
+                          href={`/customer/artisan/${a.userId}`}
+                          className="inline-flex min-h-10 items-center justify-center gap-1 rounded-lg bg-slate-950 px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                        >
+                          Book <ArrowRight size={14} />
+                        </Link>
+                      </div>
+                    </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

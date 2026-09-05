@@ -13,6 +13,11 @@ export default async function BookingReceiptPage({
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
+  const viewer = await prisma.user.findUnique({ where: { id: userId } })
+  if (!viewer) redirect("/auth/redirect")
+  if (viewer.role === "ARTISAN") redirect("/artisan/dashboard")
+  if (viewer.role === "ADMIN") redirect("/admin/dashboard")
+
   const { bookingId } = await params
 
   const booking = await prisma.booking.findUnique({
@@ -56,7 +61,7 @@ export default async function BookingReceiptPage({
           <div className="flex items-start justify-between border-b pb-6 mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-bold text-xl tracking-tight text-slate-900">SmartBooking</span>
+                <span className="font-bold text-xl tracking-tight text-slate-900">CraftConnect</span>
                 <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium border border-emerald-200">
                   Official Receipt
                 </span>
@@ -171,7 +176,7 @@ export default async function BookingReceiptPage({
           {/* Footer Security Badge */}
           <div className="flex items-center justify-center gap-2 text-xs text-slate-400 text-center pt-2">
             <ShieldCheck size={14} className="text-emerald-600" />
-            <span>Verified Paystack Payment · SmartBooking Escrow Guarantee</span>
+            <span>Verified Paystack Payment · CraftConnect Escrow Guarantee</span>
           </div>
         </div>
       </div>

@@ -7,8 +7,12 @@ export default async function ArtisanEarningsPage() {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
-  const artisan = await prisma.artisanProfile.findUnique({ where: { userId } })
+  const artisan = await prisma.artisanProfile.findUnique({ 
+    where: { userId },
+    include: { user: { select: { role: true } } }
+  })
   if (!artisan) redirect("/artisan-apply")
+  if (artisan.user.role !== "ARTISAN") redirect("/")
 
   const payments = await prisma.payment.findMany({
     where:   { booking: { artisanId: artisan.id }, status: "SUCCESS" },

@@ -1,10 +1,21 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit"
+
+const REVIEWS_RATE_LIMIT = 20
+const REVIEWS_RATE_WINDOW_MS = 60 * 1000
 
 export async function POST(request: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const rateLimit = checkRateLimit(
+    `reviews:${getClientIp(request)}`,
+    REVIEWS_RATE_LIMIT,
+    REVIEWS_RATE_WINDOW_MS
+  )
+  if (!rateLimit.ok) return rateLimitResponse(rateLimit)
 
   const { bookingId, artisanUserId, rating, comment } = await request.json()
 
@@ -32,11 +43,12 @@ export async function POST(request: Request) {
         bookingId,
         rating,
         comment,
+        flagged: rating <= 2,
       },
     })
 
     const allReviews = await tx.review.findMany({
-      where: { artisanId: artisan.id },
+      where: { artisanId: artisan.id, removedAt: null },
       select: { rating: true },
     })
     const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
@@ -48,6 +60,16 @@ export async function POST(request: Request) {
 
     return createdReview
   })
+
+  if (review.flagged) {
+    const { createAdminAlert } = await import("@/lib/admin")
+    await createAdminAlert({
+      type: "FLAGGED_REVIEW",
+      title: "New low-rated review",
+      message: `A ${rating}-star review was automatically flagged.`,
+      link: "/admin/reviews",
+    })
+  }
 
   return NextResponse.json(review)
 }

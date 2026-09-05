@@ -19,9 +19,10 @@ vi.mock("@/lib/prisma", () => ({
 
 import { POST } from "./route"
 
-function jsonRequest(body: unknown) {
+function jsonRequest(body: unknown, ip = "127.0.0.1") {
   return new Request("http://localhost/api/reviews", {
     method: "POST",
+    headers: { "Content-Type": "application/json", "x-forwarded-for": ip },
     body: JSON.stringify(body),
   })
 }
@@ -32,6 +33,25 @@ describe("POST /api/reviews", () => {
     prismaMock.$transaction.mockImplementation(async (callback: (tx: typeof prismaMock) => unknown) =>
       callback(prismaMock)
     )
+  })
+
+  it("returns 429 once the per-IP rate limit is exceeded", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+    prismaMock.booking.findFirst.mockResolvedValue({ id: "booking_1", customerId: "cust_1", status: "COMPLETED" })
+    prismaMock.artisanProfile.findUnique.mockResolvedValue({ id: "artisan_1" })
+    prismaMock.review.findUnique.mockResolvedValue(null)
+    prismaMock.review.create.mockResolvedValue({ id: "review_1", rating: 5 })
+    prismaMock.review.findMany.mockResolvedValue([{ rating: 5 }])
+    prismaMock.artisanProfile.update.mockResolvedValue({})
+
+    const ip = "198.51.100.81"
+    for (let i = 0; i < 20; i++) {
+      const res = await POST(jsonRequest({ bookingId: "booking_1", artisanUserId: "artisan_user_1", rating: 5 }, ip))
+      expect(res.status).toBe(200)
+    }
+
+    const res = await POST(jsonRequest({ bookingId: "booking_1", artisanUserId: "artisan_user_1", rating: 5 }, ip))
+    expect(res.status).toBe(429)
   })
 
   it("returns 401 when the caller is not authenticated", async () => {
@@ -141,5 +161,26 @@ describe("POST /api/reviews", () => {
       data: { rating: 4, totalReviews: 3 },
     })
     expect(res.status).toBe(200)
+  })
+
+  it("returns 429 once the per-IP rate limit is exceeded", async () => {
+    authMock.mockResolvedValue({ userId: "cust_1" })
+    prismaMock.booking.findFirst.mockResolvedValue({ id: "booking_1", customerId: "cust_1", status: "COMPLETED" })
+    prismaMock.artisanProfile.findUnique.mockResolvedValue({ id: "artisan_1" })
+    prismaMock.review.findUnique.mockResolvedValue(null)
+    prismaMock.review.create.mockResolvedValue({ id: "review_1", rating: 5 })
+    prismaMock.review.findMany.mockResolvedValue([{ rating: 5 }])
+    prismaMock.artisanProfile.update.mockResolvedValue({})
+
+    const ip = "198.18.0.55"
+    const payload = { bookingId: "booking_1", artisanUserId: "artisan_user_1", rating: 5 }
+
+    for (let i = 0; i < 20; i++) {
+      const res = await POST(jsonRequest(payload, ip))
+      expect(res.status).toBe(200)
+    }
+
+    const res = await POST(jsonRequest(payload, ip))
+    expect(res.status).toBe(429)
   })
 })

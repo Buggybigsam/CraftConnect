@@ -1,4 +1,4 @@
-# smartbooking
+﻿# CraftConnect
 
 A marketplace for finding and booking trusted local artisans in Ghana.
 

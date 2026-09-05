@@ -3,20 +3,14 @@
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { Save, Tag, DollarSign, MapPin, Award, FileText } from "lucide-react"
+import { ARTISAN_CATEGORIES } from "@/lib/artisan-categories"
 import { updateArtisanProfileAction } from "./_actions"
 
 const CATEGORIES = [
-  "Electrician",
-  "Plumber",
+  ...ARTISAN_CATEGORIES,
   "Cleaner",
   "Tutor",
-  "Carpenter",
-  "Painter",
-  "Mechanic",
-  "Mason",
-  "AC Technician",
   "Gardener",
-  "Appliance Repair",
   "Other",
 ]
 

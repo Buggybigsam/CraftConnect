@@ -34,10 +34,10 @@ interface BookingItem {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  PENDING:   "bg-amber-50  text-amber-700  border-amber-100",
-  CONFIRMED: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  CANCELLED: "bg-red-50    text-red-700    border-red-100",
+  PENDING:   "bg-amber-50  text-amber-800  border-amber-200",
+  CONFIRMED: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  COMPLETED: "bg-blue-50 text-blue-800 border-blue-200",
+  CANCELLED: "bg-rose-50    text-rose-800    border-rose-200",
 }
 
 type FilterStatus = "ALL" | "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED"
@@ -64,11 +64,11 @@ export default function ArtisanBookingList({ bookings }: Props) {
       {/* Header and Controls */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {/* Status Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-xl overflow-x-auto max-w-full">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-200/80 rounded-2xl overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setActiveTab("ALL")}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            className={`py-1.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === "ALL" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -77,7 +77,7 @@ export default function ArtisanBookingList({ bookings }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("PENDING")}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            className={`py-1.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === "PENDING" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -86,7 +86,7 @@ export default function ArtisanBookingList({ bookings }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("CONFIRMED")}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            className={`py-1.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === "CONFIRMED" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -95,7 +95,7 @@ export default function ArtisanBookingList({ bookings }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("COMPLETED")}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            className={`py-1.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === "COMPLETED" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -104,7 +104,7 @@ export default function ArtisanBookingList({ bookings }: Props) {
           <button
             type="button"
             onClick={() => setActiveTab("CANCELLED")}
-            className={`py-1.5 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            className={`py-1.5 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === "CANCELLED" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -118,9 +118,9 @@ export default function ArtisanBookingList({ bookings }: Props) {
 
       {/* Bookings Feed */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-10 text-center shadow-sm">
-          <Layers size={32} className="mx-auto mb-3 text-slate-300" />
-          <p className="text-slate-600 font-medium text-sm">No {activeTab !== "ALL" ? activeTab.toLowerCase() : ""} bookings found</p>
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
+          <Layers size={36} className="mx-auto mb-3 text-slate-300" />
+          <p className="text-slate-700 font-extrabold text-sm">No {activeTab !== "ALL" ? activeTab.toLowerCase() : ""} bookings found</p>
           <p className="text-slate-400 text-xs mt-1">Bookings matching this filter will appear here.</p>
         </div>
       ) : (
@@ -131,26 +131,31 @@ export default function ArtisanBookingList({ bookings }: Props) {
             return (
               <div
                 key={b.id}
-                className={`bg-white rounded-2xl border shadow-sm p-5 transition ${
-                  isNewPending ? "border-amber-200 ring-1 ring-amber-100" : "border-slate-100 hover:border-slate-200"
+                className={`bg-white rounded-3xl border shadow-xs p-5 sm:p-6 transition-all ${
+                  isNewPending
+                    ? "border-amber-300 bg-amber-50/20 ring-1 ring-amber-200"
+                    : "border-slate-200/80 hover:border-slate-300 hover:shadow-sm"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-slate-900">{b.customer.name}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                        {b.customer.name.charAt(0)}
+                      </div>
+                      <span className="font-extrabold text-slate-900 text-sm">{b.customer.name}</span>
                       {isNewPending && (
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
-                          <Sparkles size={10} /> NEW
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white animate-pulse">
+                          <Sparkles size={10} /> NEW REQUEST
                         </span>
                       )}
                     </div>
 
-                    <div className="text-sm font-medium text-slate-700">{b.service.title}</div>
+                    <div className="text-sm font-bold text-slate-800">{b.service.title}</div>
 
                     <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap pt-0.5">
-                      <span className="inline-flex items-center gap-1">
-                        <Calendar size={12} className="text-slate-400" />
+                      <span className="inline-flex items-center gap-1 font-medium text-slate-600">
+                        <Calendar size={13} className="text-emerald-600" />
                         {new Date(b.date).toLocaleDateString("en-GH", {
                           weekday: "short",
                           year: "numeric",
@@ -160,51 +165,62 @@ export default function ArtisanBookingList({ bookings }: Props) {
                           minute: "2-digit",
                         })}
                       </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Clock size={12} className="text-slate-400" />
+                      <span className="inline-flex items-center gap-1 text-slate-400">
+                        <Clock size={12} />
                         Booked {new Date(b.createdAt).toLocaleDateString("en-GH", { month: "short", day: "numeric" })}
                       </span>
                     </div>
 
                     {/* Customer Contact Details (Email + Phone) */}
-                    <div className="flex items-center gap-3 text-xs text-slate-500 pt-1 flex-wrap">
-                      <span className="inline-flex items-center gap-1">
+                    <div className="flex items-center gap-3 text-xs pt-1 flex-wrap">
+                      <a
+                        href={`mailto:${b.customer.email}`}
+                        className="inline-flex items-center gap-1 text-slate-500 hover:text-emerald-700 font-medium transition"
+                      >
                         <Mail size={12} className="text-slate-400" />
                         {b.customer.email}
-                      </span>
+                      </a>
                       {b.customer.phone && (
-                        <span className="inline-flex items-center gap-1">
-                          <Phone size={12} className="text-slate-400" />
+                        <a
+                          href={`tel:${b.customer.phone}`}
+                          className="inline-flex items-center gap-1 text-emerald-700 hover:underline font-bold transition"
+                        >
+                          <Phone size={12} />
                           {b.customer.phone}
-                        </span>
+                        </a>
                       )}
                     </div>
 
                     {b.notes && (
-                      <p className="text-xs text-slate-500 italic bg-slate-50 rounded-lg px-2.5 py-1.5 mt-2 border border-slate-100">
+                      <div className="text-xs text-slate-600 italic bg-slate-50 rounded-xl px-3 py-2 mt-2 border border-slate-200/70">
                         &ldquo;{b.notes}&rdquo;
-                      </p>
+                      </div>
                     )}
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[b.status]}`}>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${STATUS_STYLES[b.status]}`}>
                       {b.status}
                     </span>
-                    <div className="flex items-center gap-1 text-sm font-bold text-slate-900 mt-2 justify-end">
-                      <DollarSign size={13} className="text-slate-400" />
+                    <div className="flex items-center gap-1 text-base font-black text-slate-900 mt-2.5 justify-end">
                       GHS {b.service.price}
                     </div>
                     {b.payment && (
-                      <span className={`block text-[11px] font-medium mt-1 ${b.payment.status === "SUCCESS" ? "text-emerald-600" : "text-slate-400"}`}>
-                        {b.payment.status === "SUCCESS" ? "Paid" : b.payment.status}
+                      <span className={`inline-block text-[11px] font-bold mt-1 px-2 py-0.5 rounded-full ${
+                        b.payment.status === "SUCCESS"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {b.payment.status === "SUCCESS" ? "Paid via Paystack" : b.payment.status}
                       </span>
                     )}
                   </div>
                 </div>
 
                 {b.status === "PENDING" && (
-                  <ArtisanBookingActions bookingId={b.id} />
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <ArtisanBookingActions bookingId={b.id} />
+                  </div>
                 )}
               </div>
             )

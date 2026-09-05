@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server"
 import Link from "next/link"
 import { ArrowLeft, MapPin, Star, Clock } from "lucide-react"
 import BookingForm from "./_form"
+import { getArtisanPhoto } from "@/lib/artisan-categories"
 
 export default async function BookingPage({
   params,
@@ -14,12 +15,19 @@ export default async function BookingPage({
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
+  // Defense-in-depth: only CUSTOMER role may book.
+  const viewer = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+  if (!viewer) redirect("/auth/redirect")
+  if (viewer.role === "ARTISAN") redirect("/artisan/dashboard")
+  if (viewer.role === "ADMIN") redirect("/admin/dashboard")
+
   const artisan = await prisma.artisanProfile.findFirst({
     where:   { userId: artisanId, status: "APPROVED" },
     include: { user: true, services: true },
   })
 
   if (!artisan) notFound()
+  const artisanPhoto = getArtisanPhoto(artisan.user.name, artisan.category)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -30,9 +38,18 @@ export default async function BookingPage({
 
         {/* Artisan mini-card */}
         <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-400">
-            {artisan.user.name.charAt(0)}
-          </div>
+          {artisanPhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={artisanPhoto}
+              alt={`${artisan.category} artisan ${artisan.user.name}`}
+              className="h-14 w-14 shrink-0 rounded-xl border border-slate-100 object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-400">
+              {artisan.user.name.charAt(0)}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-slate-900">{artisan.user.name}</div>
             <div className="text-xs text-emerald-600 font-medium">{artisan.category}</div>

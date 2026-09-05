@@ -22,7 +22,9 @@ export default async function CustomerSettingsPage() {
     },
   })
 
-  if (!user) redirect("/sign-in")
+  if (!user) redirect("/auth/redirect")
+  if (user.role === "ARTISAN") redirect("/artisan/dashboard")
+  if (user.role === "ADMIN") redirect("/admin/dashboard")
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">

@@ -1,17 +1,11 @@
+import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { MapPin, Star, User, ArrowLeft, Clock, Briefcase } from "lucide-react"
+import { ARTISAN_CATEGORY_PHOTOS, getArtisanPhoto } from "@/lib/artisan-categories"
 
-const CATEGORY_PHOTOS: Record<string, string> = {
-  Electrician: "/images/artisans/electrician-outdoor-wall.jpg",
-  Plumber:     "/images/artisans/plumber-sink.jpg",
-  Carpenter:   "/images/artisans/carpenter-workshop.jpg",
-  Painter:     "/images/artisans/painter-roller.jpg",
-  Mechanic:    "/images/artisans/mechanic-engine.jpg",
-  Mason:       "/images/artisans/mason-bricklaying.jpg",
-}
 
 function StarDisplay({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
@@ -32,6 +26,14 @@ export default async function ArtisanProfilePage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { userId } = await auth()
+  if (!userId) redirect("/sign-in")
+
+  const viewer = await prisma.user.findUnique({ where: { id: userId } })
+  if (!viewer) redirect("/auth/redirect")
+  if (viewer.role === "ARTISAN") redirect("/artisan/dashboard")
+  if (viewer.role === "ADMIN") redirect("/admin/dashboard")
+
   const { id } = await params
 
   const artisan = await prisma.artisanProfile.findFirst({
@@ -48,6 +50,7 @@ export default async function ArtisanProfilePage({
   })
 
   if (!artisan) notFound()
+  const artisanPhoto = getArtisanPhoto(artisan.user.name, artisan.category)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -57,10 +60,10 @@ export default async function ArtisanProfilePage({
         </Link>
 
         {/* Category banner */}
-        {CATEGORY_PHOTOS[artisan.category] && (
+        {ARTISAN_CATEGORY_PHOTOS[artisan.category] && (
           <div className="relative h-40 sm:h-52 w-full rounded-2xl overflow-hidden">
             <Image
-              src={CATEGORY_PHOTOS[artisan.category]}
+              src={ARTISAN_CATEGORY_PHOTOS[artisan.category]}
               alt={`${artisan.category} at work`}
               fill
               sizes="100vw"
@@ -73,9 +76,9 @@ export default async function ArtisanProfilePage({
 
         {/* Profile header */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 flex flex-col sm:flex-row gap-5">
-          {artisan.user.imageUrl ? (
+          {artisanPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={artisan.user.imageUrl} className="w-20 h-20 rounded-full object-cover shrink-0" alt={artisan.user.name} />
+            <img src={artisanPhoto} className="w-20 h-20 rounded-2xl object-cover shrink-0" alt={`${artisan.category} artisan ${artisan.user.name}`} />
           ) : (
             <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
               <User size={36} className="text-emerald-300" />

@@ -2,7 +2,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
-import { Zap, Search, CalendarDays } from "lucide-react"
+import { Search, CalendarDays } from "lucide-react"
+import BrandIcon from "@/components/brand-icon"
 
 export default function CustomerNav() {
   const path = usePathname()
@@ -16,35 +17,36 @@ export default function CustomerNav() {
     },
     {
       href:   "/customer/dashboard",
-      label:  "My Bookings",
+      label:  "Dashboard",
       icon:   CalendarDays,
       active: path.startsWith("/customer/dashboard"),
     },
   ]
 
   return (
-    <nav className="bg-white border-b border-slate-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-          <span className="w-6 h-6 bg-emerald-600 rounded-md flex items-center justify-center shrink-0">
-            <Zap size={12} className="text-white" />
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link href="/customer/dashboard" className="flex items-center gap-2.5 font-bold text-slate-950 text-sm">
+          <BrandIcon className="h-8 w-8 shadow-sm ring-1 ring-slate-200" priority />
+          <span className="hidden sm:inline">CraftConnect</span>
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200 hidden md:inline-block">
+            Customer Portal
           </span>
-          SmartBooking
         </Link>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
           {links.map(({ href, label, icon: Icon, active }) => (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+              className={`flex min-h-9 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
                 active
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-white text-slate-950 shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               <Icon size={14} />
-              {label}
+              <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
         </div>

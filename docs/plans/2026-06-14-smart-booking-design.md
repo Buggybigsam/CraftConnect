@@ -1,4 +1,4 @@
-# Smart Booking System: Design Document
+# CraftConnect System: Design Document
 **Date:** 2026-06-14  
 **Status:** Approved
 
